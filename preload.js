@@ -22,11 +22,12 @@ contextBridge.exposeInMainWorld("electronAPI", {
 
     //escucharSDK: () => ipcRenderer.send("escuchar-sdk"),
     onEventoSDK: (callback) => { ipcRenderer.on("evento-sdk", (event, body) => { callback(body); }); },
+    getConsolaMolinete: () => ipcRenderer.invoke("get-consola-molinete"),
     statusMolinete: () => ipcRenderer.invoke("status-molinete"),
     conectarMolinete: () => ipcRenderer.invoke("conectar-molinete"),
     sincronizarMolinete: (sincroInteligente, limpiarLogs) => ipcRenderer.invoke("sincronizar-molinete", { sincroInteligente, limpiarLogs }),
     obtenerUsuariosMolinete: () => ipcRenderer.invoke("obtener-usuarios-molinete"),
-    habilitarPasoMolinete: (usuarioId, habilitar) => ipcRenderer.invoke("habilitar-paso-molinete", { usuarioId, habilitar }),
+    habilitarPasoMolinete: (ms=3000) => ipcRenderer.invoke("habilitar-paso-molinete", ms),
     ejecutarMolinete: (comando, params) => ipcRenderer.invoke("ejecutar-molinete", { comando, params }),
-    sincronizarIndividualMolinete: (usuarioId) => ipcRenderer.invoke("sincronizar-individual-molinete", { usuarioId }),
+    sincronizarIndividualMolinete: (usuarioId, habilitar) => ipcRenderer.invoke("sincronizar-individual-molinete", { usuarioId, habilitar }),
 });

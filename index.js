@@ -175,7 +175,7 @@ async function conectarMolinete(forzar = false){
         escribirRegistrosMolinete("Intentando conectar con el molinete...");
         // Verifico la existencia del archivo InterfazMolineteSDK.exe
         const nombreExe = "InterfazMolineteSDK.exe";
-        const molineteSDKPath = path.join(__dirname, "public", "resources", nombreExe);
+        const molineteSDKPath = path.join(documentsPath, "fulltraining-2026", nombreExe);
         if(fs.existsSync(molineteSDKPath) == false) throw `No se encontró el archivo ${nombreExe} en la ruta ${molineteSDKPath}`;
 
         // Verificar si está ejecutándose
@@ -250,10 +250,10 @@ async function ejecutarMolinete(accion, data = {}){
     }
 }
 async function escribirRegistrosMolinete(str){
-    const ahora = getDateTime(true);
-    registrosMolinete.push(ahora + " " + str);
+    const ahora = getDateTime(false);
+    registrosMolinete.push(ahora + " # " + str);
     if(registrosMolinete.length > 1000) registrosMolinete.shift();
-    win.webContents.send("evento-sdk", {from: "backend", body: str});
+    win.webContents.send("evento-sdk", {from: "backend", body: registrosMolinete.at(-1)});
 }
 /* ipcMain.on("escuchar-sdk", () => {
     escuchadorSDK.setCallback((body) => {
@@ -286,11 +286,12 @@ ipcMain.handle("obtener-usuarios-molinete", async (event, data) => {
 });
 ipcMain.handle("habilitar-paso-molinete", async (event, data) => {
     const ms = Number(data?.ms || 3000);
-    let resp = await ejecutarMolinete("habilitar-pase-molinete", {time: ms});
+    let resp = await ejecutarMolinete("habilitar-pase-molinete", {time: ms});  
     return resp;
 });
 ipcMain.handle("ejecutar-molinete", async (event, data) => {
-    return await ejecutarMolinete(data.accion, data.params);
+    const resp = await ejecutarMolinete(data.accion, data.params);
+    return resp;
 });
 ipcMain.handle("sincronizar-individual-molinete", async (event, data) => {
     let resp = [];
@@ -330,10 +331,12 @@ ipcMain.handle("sincronizar-individual-molinete", async (event, data) => {
 
     }catch(err){
         resp.push("Error al sincronizar individual: " + err.toString());  
-        logger.log("Error al sincronizar individual: " + err.message, "error");
+        logger.log("Error al sincronizar individual: " + err.toString(), "error");
     }finally{
         sincronizando.estado = false;
         sincronizando.iniciado = null;
+
+        registrosMolinete.push(getDateTime(false) + " # " + resp.join("<br>"));
         return resp;
     }
 });
@@ -347,6 +350,7 @@ async function sincronizar(sincroInteligente=true, limpiarRegistros=false){
         if(typeof limpiarRegistros !== "boolean") throw "limpiarRegistros debe ser un booleano";
 
         const ahora = getDateTime(true);
+        const ahoraFechaHora = getDateTime(false);
         if(sincronizando.estado == true){
             if(sincronizando.iniciado && (new Date() - sincronizando.iniciado) > 15 * 60 * 1000){ // si lleva mas de 15 minutos, lo reinicio
                 sincronizando.estado = false;
@@ -358,7 +362,7 @@ async function sincronizar(sincroInteligente=true, limpiarRegistros=false){
         sincronizando.estado = true;
         sincronizando.iniciado = new Date();
 
-        resp.push(`${ahora} Iniciando sincronización del molinete (sincroInteligente: ${sincroInteligente}, limpiarRegistros: ${limpiarRegistros})`);
+        resp.push(`${ahoraFechaHora} # Iniciando sincronización del molinete (sincroInteligente: ${sincroInteligente}, limpiarRegistros: ${limpiarRegistros})`);
 
         //0. Verifico si el molinete está conectado, si no lo está, intento conectarlo
         if(estadoMolinete.status == false){
@@ -498,8 +502,7 @@ async function sincronizar(sincroInteligente=true, limpiarRegistros=false){
     }finally{
         sincronizando.estado = false;
         sincronizando.iniciado = null;
-        registrosSincronizacion.push(resp);
-        registrosMolinete.push(getDateTime(true) + " " + resp.join("\n"));
+        registrosMolinete.push(resp.join("<br>"));
         if(registrosMolinete.length > 1000) registrosMolinete = registrosMolinete.slice(registrosMolinete.length - 1000);
 
         return resp;

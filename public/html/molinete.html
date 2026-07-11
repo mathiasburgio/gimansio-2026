@@ -46,7 +46,7 @@
     <main class="container">
         <div class="card">
             <div class="card-header text-center card-primary card-outline bg-light">
-                <button class="btn mx-1 btn-danger" id="conectar"><i class="fas fa-plug"></i> Conectar</button>
+                <button class="btn mx-1 btn-danger" id="reconectar">Estado: Desconectado</button>
                 <button class="btn mx-1 btn-primary" id="permitir-paso"><i class="fas fa-door-open"></i> Permitir paso</button>
                 <button class="btn mx-1 btn-primary" id="sincronizar"><i class="fas fa-sync-alt"></i> Sincronizar</button>
                 <button class="btn mx-1 btn-primary" id="ver-usuarios-molinete"><i class="fas fa-users"></i> Ver Usuarios (molinete)</button>
@@ -61,6 +61,23 @@
     </main>
 
     <div id="modaldes" class="d-none">
+        <div id="modal-usuarios-molinete">
+            <div class="form-group">
+                <label for="">Buscar</label>
+                <input type="search" placeholder="Buscar por nombre..." class="form-control" id="buscar">
+            </div>
+            <div class="border" style="height:50vh; overflow-y: scroll">
+                <table class="table table-sm mb-0">
+                    <thead class="thead-dark">
+                        <tr>
+                            <th>Usuario</th>
+                            <th class="text-right">EnrollNumber</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
     </div>
 
     <script src="../resources/cdn/jquery-3.7.1.min.js"></script>
