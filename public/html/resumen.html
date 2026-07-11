@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Resumen</title>
+
+    <link rel="stylesheet" href="../resources/cdn/bootstrap/css/bootstrap.min.css">
+    <link rel="stylesheet" href="../resources/cdn/adminlte/css/adminlte.min.css">
+    <link rel="stylesheet" href="../resources/cdn/font-awesome-6.6.0/css/all.min.css">
+    <link rel="stylesheet" href="../resources/cdn/font-awesome-6.6.0/css/brands.min.css">
+    <link rel="stylesheet" href="../css/main.css">
+    <style>
+        body{
+            /* background-color: #5e7dac !important; */
+        }
+    </style>
+</head>
+<body class="no-select">
+    <div class="container">
+        <div class="text-center mb-3">
+            <h1>Gimnasio FullTraining <small>by Juana Amico</small></h1>
+        </div>
+        <div class="row mb-3 text-center">
+            <div class="col">
+                <a href="inicio.html" class="btn btn-block btn-light">Inicio</a>
+            </div>
+            <div class="col">
+                <a href="usuarios.html" class="btn btn-block btn-light">Usuarios</a>
+            </div>
+            <div class="col">
+                <a href="disciplinas.html" class="btn btn-block btn-light">Disciplinas</a>
+            </div>
+            <div class="col">
+                <a href="turnos.html" class="btn btn-block btn-light">Turnos</a>
+            </div>
+            <div class="col">
+                <a href="resumen.html" class="btn btn-block btn-primary">Resumen</a>
+            </div>
+            <div class="col">
+                <a href="molinete.html" class="btn btn-block btn-light">Molinete</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header font-weight-bold bg-light">
+                        Resumen
+                    </div>
+                    <div class="card-body">
+                        <div class="row mb-3">
+                            <div class="col-3">
+                                <input type="month" class="form-control" id="mes">
+                            </div>
+                            <div class="col d-none">
+                                <select name="caja" class="form-control d-none" id="caja">
+                                    <option value="todas">Caja: Todas</option>
+                                </select>
+                            </div>
+                            <div class="col d-none">
+                                <select name="filtro" class="form-control d-none" id="filtro">
+                                    <option value="ninguno">Filtro: ninguno</option>
+                                    <option value="cobros">Filtro: solo cobros</option>
+                                    <option value="pagos">Filtro: solo pagos</option>
+                                </select>
+                            </div>
+                            <div class="col-9 text-right">
+                                <button class="btn btn-primary" id="agregar-registro"><i class="fas fa-plus"></i> Agregar registro</button>
+                                <button class="btn btn-success" id="exportar"><i class="fas fa-file-excel"></i> Exportar Excel</button>
+                            </div>
+                        </div>
+                        <div class="border" style="height: 400px; overflow-y: auto; overflow-x: hidden;">
+                            <table class="table table-sm">
+                                <thead class="thead-dark">
+                                    <tr>
+                                        <th>Acción</th>
+                                        <th>Fecha</th>
+                                        <th>Cliente</th>
+                                        <th class="text-right">Monto</th>
+                                        <th class="text-right">Saldo (mes)</th>
+                                    </tr>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
+                        <div class="border mt-3" style="height: 400px; overflow-y: auto; overflow-x: hidden;">
+                            <table class="table table-sm">
+                                <thead class="thead-dark">
+                                    <tr>
+                                        <th>Disciplina</th>
+                                        <th class="text-right">Registros</th>
+                                        <th class="text-right">Ingresos</th>
+                                    </tr>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="modales" class="d-none">
+        <div id="modal-agregar-registro">
+            <div class="form-group">
+                <label for="">Fecha</label>
+                <input type="text" readonly id="fecha" class="form-control">
+            </div>
+            <div class="form-group">
+                <label for="">Acción</label>
+                <select name="accion" id="accion" class="form-control">
+                    <option value="cobro">Cobro</option>
+                    <option value="pago">Pago</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="">Caja / Método de Pago</label>
+                <select name="caja" id="caja" class="form-control">
+                    <option value="efectivo">Efectivo</option>
+                    <option value="transferencia">Transferencia</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="">Monto</label>
+                <input type="number" id="monto" class="form-control">
+            </div>
+            <div class="form-group">
+                <label for="">Detalle</label>
+                <input type="text" id="detalle" class="form-control">
+            </div>
+
+            <div class="text-center">
+                <button class="btn btn-success" id="acreditar">Acreditar</button>
+            </div>
+
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+    <script src="../resources/cdn/jquery-3.7.1.min.js"></script>
+    <script src="../resources/cdn/bootstrap/js/popper.min.js"></script>
+
+    <script src="../resources/cdn/adminlte/js/adminlte.min.js"></script>
+    <script src="../resources/cdn/bootstrap/js/bootstrap.min.js"></script>
+    <script src="../resources/cdn/sweetalert2/sweetalert2.all.min.js"></script>
+
+    <script src="../resources/Modal2.js"></script>
+    <script src="../resources/Utils.js"></script>
+    <script src="../js/resumen.js"></script>
+    <script>
+        let modal = new Modal();
+        let utils = new Utils();
+        let resumen = new Resumen();
+        window.onload = () =>{
+            
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,56 @@
+{
+    "NODE_ENV": "development",
+    "APP_NAME": "gimnasio-v3",
+    "PORT": 3000,
+    "EMAIL_SUPER_ADMIN": "prueba@prueba.com",
+    "CRYPTO_ALGORITHM": "aes-256-cbc",
+    "CRYPTO_ENC_KEY": "fz3c199c2470cx57zp9071e0917c17b",
+    "CRYPTO_IV": "5183666c88eec9e4",
+    "MONGO_URI": "mongodb://127.0.0.1/molinete-v3",
+    "CAJAS": ["efectivo", "tarjeta", "mercado-pago", "otro"],
+    "GRUPO_PAGOS": ["varios", "servicios", "productos", "otro"],
+    "GRUPO_COBROS": ["varios", "servicios", "productos", "otro"],
+    "ALERTA_EXCESO_REGISTROS": 3000,
+    "DISCIPLINAS": [
+        {
+            "nombre": "Fierros",
+            "habilitado": true,
+            "fierros": true,
+            "dias": [
+                { "dia": 0, "horarios": ["dom"] },
+                { "dia": 1, "horarios": ["lun",  "01:00"] },
+                { "dia": 2, "horarios": ["mar"] },
+                { "dia": 3, "horarios": ["mie"] },
+                { "dia": 4, "horarios": ["jue"] },
+                { "dia": 5, "horarios": ["vie"] },
+                { "dia": 6, "horarios": ["sab"] }
+            ]
+        }, 
+        {
+            "nombre": "Pileta libre",
+            "habilitado": true,
+            "dias": [
+                { "dia": 0, "horarios": ["dom"] },
+                { "dia": 1, "horarios": ["lun",  "07:00", "08:00", "11:00", "12:00", "15:00", "16:00", "18:00", "20:00"] },
+                { "dia": 2, "horarios": ["mar", "07:00", "08:00", "09:00", "11:00", "12:00", "15:00", "16:00", "20:00"] },
+                { "dia": 3, "horarios": ["mie", "07:00", "08:00", "11:00", "12:00", "15:00", "16:00", "18:00", "20:00"] },
+                { "dia": 4, "horarios": ["jue", "07:00", "08:00", "09:00", "11:00", "12:00", "15:00", "16:00", "20:00"] },
+                { "dia": 5, "horarios": ["vie", "07:00", "08:00", "10:00", "11:00", "12:00", "15:00", "16:00", "18:00", "20:00"] },
+                { "dia": 6, "horarios": ["sab", "09:00", "10:00"] }
+            ]
+        }, 
+        {
+            "nombre": "aqua gym",
+            "habilitado": true,
+            "dias": [
+                { "dia": 0, "horarios": ["dom"] },
+                { "dia": 1, "horarios": ["lun", "10:00"] },
+                { "dia": 2, "horarios": ["mar", "18:00"] },
+                { "dia": 3, "horarios": ["mie", "10:00"] },
+                { "dia": 4, "horarios": ["jue", "18:00"] },
+                { "dia": 5, "horarios": ["vie"] },
+                { "dia": 6, "horarios": ["sab"] }
+            ]
+        }
+    ]
+}

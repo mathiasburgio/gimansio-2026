@@ -1,0 +1,109 @@
+/*pre-cortina-style*/
+.overflow-hidden{
+    overflow: hidden;
+}
+.overflow-auto{
+    overflow: auto;
+}
+
+:root{
+    --color-whatsapp: #25d366;
+    --color-facebook: #3b5998;
+    --color-youtube: #c4302b;
+}
+.cp{
+    cursor: pointer;
+}
+.bg-glass{
+    background: rgba( 255, 255, 255, 0.25 );
+    backdrop-filter: blur( 1.5px );
+    -webkit-backdrop-filter: blur( 1.5px );
+    border-radius: 10px;
+    border: 1px solid rgba( 255, 255, 255, 0.18 );
+}
+.bg-instagram{
+    background: #833ab4;
+    background: linear-gradient(
+        to right,
+        #833ab4,#fd1d1d,#fcb045
+    );
+}
+.line-through, .tachado{
+    text-decoration:line-through;
+}
+#cortina{
+    height: 100vh;
+    width: 100vw;
+    top: 0;
+    left:0;
+    font-size: 3rem;
+    position: absolute;
+    z-index: 100000;
+}
+.wrapper{
+    opacity: 1;
+    /*opacity: 0;
+     min-height: 100vh;
+    width: 100vw;
+    top: 0;
+    left:0;
+    position: absolute; */
+}
+.nav-logout{
+    color: var(--danger) !important;
+}
+.nav-logout:hover{
+    background-color: var(--danger) !important;
+    color: white !important;
+}
+.nav-top-button{
+    width: 38px;
+    padding-left:0;
+    padding-right:0;
+    margin-right: 5px;
+}
+body.table-uppercase table{
+    text-transform: uppercase;
+}
+body.dark-mode .swal2-toast{
+    background-color: var(--gray-dark) !important;
+    color: var(--white) !important;
+}
+body.dark-mode .swal2-title{
+    font-weight: bold;
+    color: var(--white) !important;
+}
+
+body.thead-mode-sticky table th{
+    position: sticky;
+    top:0;
+}
+/*
+    se (agrega | quita) esta clase con JS
+    menu.setTheadDynamic()
+*/
+.thead-mode-dynamic{
+    position: sticky;
+    top:0;
+}
+
+.table-hover-primary:hover{
+    background-color: #b8daff !important;
+}
+.table-hover-warning:hover{
+    background-color: #ffeeba !important;
+}
+.table-hover-danger:hover{
+    background-color: #f5c6cb !important;
+}
+.table-hover-info:hover{
+    background-color: #d1ecf1 !important;
+}
+.no-select{
+    -webkit-touch-callout: none; /* iOS Safari */
+    -webkit-user-select: none; /* Safari */
+    -khtml-user-select: none; /* Konqueror HTML */
+    -moz-user-select: none; /* Old versions of Firefox */
+    -ms-user-select: none; /* Internet Explorer/Edge */
+    user-select: none; /* Non-prefixed version, currently supported by Chrome, Edge, Opera and Firefox */
+}

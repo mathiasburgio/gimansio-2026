@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inicio</title>
+
+    <link rel="stylesheet" href="../resources/cdn/bootstrap/css/bootstrap.min.css">
+    <link rel="stylesheet" href="../resources/cdn/adminlte/css/adminlte.min.css">
+    <link rel="stylesheet" href="../resources/cdn/font-awesome-6.6.0/css/all.min.css">
+    <link rel="stylesheet" href="../resources/cdn/font-awesome-6.6.0/css/brands.min.css">
+    <link rel="stylesheet" href="../css/main.css">
+    <style>
+        body{
+           /*  background-color: #5e7dac !important; */
+        }
+    </style>
+</head>
+<body class="no-select">
+    <div class="container">
+        <div class="text-center mb-3">
+            <h1>Gimnasio FullTraining <small>by Juana Amico</small></h1>
+        </div>
+        <div class="row mb-3 text-center">
+            <div class="col">
+                <a href="inicio.html" class="btn btn-block btn-light">Inicio</a>
+            </div>
+            <div class="col">
+                <a href="usuarios.html" class="btn btn-block btn-light">Usuarios</a>
+            </div>
+            <div class="col">
+                <a href="disciplinas.html" class="btn btn-block btn-light">Disciplinas</a>
+            </div>
+            <div class="col">
+                <a href="turnos.html" class="btn btn-block btn-primary">Turnos</a>
+            </div>
+            <div class="col">
+                <a href="resumen.html" class="btn btn-block btn-light">Resumen</a>
+            </div>
+            <div class="col">
+                <a href="molinete.html" class="btn btn-block btn-light">Molinete</a>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-6">
+                <div class="card card-primary card-outline">
+                    <div class="card-header font-weight-bold bg-light">
+                        Usuarios / Clientes
+                    </div>
+                    <div class="card-body">
+                        <input type="search" class="form-control mb-3" id="buscar" placeholder="Buscar por nombre, dni o email">
+                        <div class="border" style="height: 65vh; overflow-y: auto; overflow-x: hidden;">
+                            <table class="table table-sm">
+                                <thead class="thead-dark">
+                                    <tr>
+                                        <th>Nombre</th>
+                                        <th class="text-right">EnrollNumber</th>
+                                        <th class="text-right">Pases</th>
+                                    </tr>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
+                            <small class="text-muted">
+                                Molinete: habilitado <i class="fas fa-circle text-success"></i> | deshabilitado <i class="fas fa-circle text-danger"></i></small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-6">
+                <div class="card card-primary card-outline">
+                    <div class="card-header font-weight-bold bg-light">
+                        Turno
+                    </div>
+                    <div class="card-body">
+                        <div class="form-group">
+                            <label for="">Usuario / Cliente</label>
+                            <div class="input-group">
+                                <input type="text" class="form-control" id="usuario" readonly>
+                                <div class="input-group-append">
+                                    <button class="btn btn-primary" id="ver-historial" type="button">Ver historial</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="">Disciplina</label>
+                            <div class="input-group">
+                                <select class="form-control" id="disciplina">
+                                </select>
+                                <div class="input-group-append">
+                                    <button class="btn btn-primary" id="ver-asistentes" type="button">Ver asistentes</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col">
+                                <button class="btn btn-light" id="ultimo-turno">Último turno</button>
+                                <button class="btn btn-light" id="nuevo-turno">Nuevo turno</button>
+                            </div>
+                            <div class="col-auto text-right">
+                                <button class="btn btn-warning btn-sm mt-1" id="bt-historial-molinete">Hist. pases molinete</button>
+                            </div>
+                        </div>
+
+                        <div id="campos" class="d-none">
+                            <div id="tabla-horarios" class="border my-3 d-none">
+                                <div class="text-center bg-light font-weight-bold mt-1">Horarios</div>
+                                <table class="table table-striped table-sm mb-0">
+                                    <tbody></tbody>
+                                </table>
+                            </div>
+    
+                            <div class="row">
+                                <div class="col-6">
+                                    <div class="form-group">
+                                        <label for="">Desde</label>
+                                        <input type="date" class="form-control" id="desde">
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="form-group">
+                                        <label for="">Hasta</label>
+                                        <input type="date" class="form-control" id="hasta">
+                                    </div>
+                                </div>
+                                <div class="col-4">
+                                    <div class="form-group">
+                                        <label for="">Días</label>
+                                        <input type="number" class="form-control" id="dias">
+                                    </div>
+                                </div>
+                                <div class="col-4">
+                                    <div class="form-group">
+                                        <label for="">Cobrado</label>
+                                        <div class="input-group">
+                                            <input type="text" disabled class="form-control" id="cobrado">
+                                            <div class="input-group-append">
+                                                <button class="btn btn-primary" id="cobrar" type="button">Cobrar</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-4">
+                                    <div class="form-group">
+                                        <label for="">Cancelado</label>
+                                        <div class="input-group">
+                                            <input type="text" disabled class="form-control" id="cancelado">
+                                            <div class="input-group-append">
+                                                <button class="btn btn-danger" id="cancelar" type="button">Cancelar</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+    
+                            </div>
+                            <div class="text-center">
+                                <button class="btn btn-success" id="guardar-turno">Guardar turno</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="modales" class="d-none">
+        <div id="modal-historial">
+            <div class="border" style="min-height:400px">
+                <table class="table table-sm mb-0">
+                    <thead class="thead-dark">
+                        <tr>
+                            <th>Disciplina</th>
+                            <th>Desde</th>
+                            <th>Hasta</th>
+                            <th>Cobrado</th>
+                            <th>Cancelado</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+        <div id="modal-asistentes">
+            <div class="row mb-2">
+                <div class="col">
+                    <input type="text" class="form-control" readonly id="disciplina">
+                </div>
+                <div class="col">
+                    <select class="form-control" id="horario">
+                    </select>
+                </div>
+            </div>
+            <div class="border">
+                <table class="table table-sm mb-0">
+                    <thead class="thead-dark">
+                        <tr>
+                            <th>#</th>
+                            <th>Nombre</th>
+                            <th>Desde</th>
+                            <th>Hasta</th>
+                            <th>Cobrado</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+        <div id="modal-cobrar">
+            <div class="form-group">
+                <label for="">Efectivo</label>
+                <input type="number" class="form-control" id="efectivo">
+            </div>
+            <div class="form-group">
+                <label for="">Transferencia</label>
+                <input type="number" class="form-control" id="transferencia">
+            </div>
+            <div class="form-group">
+                <label for="">Total</label>
+                <input type="text" readonly class="form-control" id="total">
+            </div>
+
+            <div class="text-center">
+                <button class="btn btn-block btn-success" id="registrar-cobro">Cobrar</button>
+            </div>
+        </div>
+        <div id="modal-pasadas">
+            <h4 id="usuario" class="text-uppercase"></h4>
+            <div class="border" style="min-height:400px">
+                <table class="table table-sm mb-0" id="tabla-pasadas">
+                    <thead class="thead-dark">
+                        <tr>
+                            <th>Fecha</th>
+                            <th>Hora</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+            <small class="text-muted">
+                Las pasadas con menos de 3hs de dif se cuentan como una sola.
+                <br>
+                Los cambios de color en grilla se dan con cada conteo de pase.
+            </small>
+            <div class="text-center mt-3">
+                <button class="btn btn-danger mx-2" id="deshabilitar-pase">Deshabilitar pase</button>
+                <button class="btn btn-success mx-2" id="habilitar-pase">Habilitar pase</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="../resources/cdn/jquery-3.7.1.min.js"></script>
+    <script src="../resources/cdn/bootstrap/js/popper.min.js"></script>
+
+    <script src="../resources/cdn/adminlte/js/adminlte.min.js"></script>
+    <script src="../resources/cdn/bootstrap/js/bootstrap.min.js"></script>
+    <script src="../resources/cdn/sweetalert2/sweetalert2.all.min.js"></script>
+
+    <script src="../resources/Modal2.js"></script>
+    <script src="../resources/Utils.js"></script>
+    <script src="../js/turnos.js"></script>
+    <script>
+        let modal = new Modal();
+        let utils = new Utils();
+        let turnos = new Turnos();
+        window.onload = () =>{
+            
+        }
+    </script>
+</body>
+</html>

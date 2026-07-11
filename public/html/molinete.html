@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inicio</title>
+
+    <link rel="stylesheet" href="../resources/cdn/bootstrap/css/bootstrap.min.css">
+    <link rel="stylesheet" href="../resources/cdn/adminlte/css/adminlte.min.css">
+    <link rel="stylesheet" href="../resources/cdn/font-awesome-6.6.0/css/all.min.css">
+    <link rel="stylesheet" href="../resources/cdn/font-awesome-6.6.0/css/brands.min.css">
+    <link rel="stylesheet" href="../css/main.css">
+    <style>
+        body{
+           /*  background-color: #5e7dac !important; */
+        }
+    </style>
+</head>
+<body class="no-select">
+    <div class="container">
+        <div class="text-center mb-3">
+            <h1>Gimnasio FullTraining <small>by Juana Amico</small></h1>
+        </div>
+        <div class="row mb-3 text-center">
+            <div class="col">
+                <a href="inicio.html" class="btn btn-block btn-light">Inicio</a>
+            </div>
+            <div class="col">
+                <a href="usuarios.html" class="btn btn-block btn-light">Usuarios</a>
+            </div>
+            <div class="col">
+                <a href="disciplinas.html" class="btn btn-block btn-light">Disciplinas</a>
+            </div>
+            <div class="col">
+                <a href="turnos.html" class="btn btn-block btn-light">Turnos</a>
+            </div>
+            <div class="col">
+                <a href="resumen.html" class="btn btn-block btn-light">Resumen</a>
+            </div>
+            <div class="col">
+                <a href="molinete.html" class="btn btn-block btn-primary">Molinete</a>
+            </div>
+        </div>
+    </div>
+
+    <main class="container">
+        <div class="card">
+            <div class="card-header text-center card-primary card-outline bg-light">
+                <button class="btn mx-1 btn-danger" id="conectar"><i class="fas fa-plug"></i> Conectar</button>
+                <button class="btn mx-1 btn-primary" id="permitir-paso"><i class="fas fa-door-open"></i> Permitir paso</button>
+                <button class="btn mx-1 btn-primary" id="sincronizar"><i class="fas fa-sync-alt"></i> Sincronizar</button>
+                <button class="btn mx-1 btn-primary" id="ver-usuarios-molinete"><i class="fas fa-users"></i> Ver Usuarios (molinete)</button>
+            </div>
+            <div class="card-body">
+                <div id="consola" style="height: 70vh; overflow-y: scroll;">
+
+                </div>
+                <small class="text-muted">Ayuda: <b>Shift + Sincronizar</b> = Fuerza sincro completa</small>
+            </div>
+        </div>
+    </main>
+
+    <div id="modaldes" class="d-none">
+    </div>
+
+    <script src="../resources/cdn/jquery-3.7.1.min.js"></script>
+    <script src="../resources/cdn/bootstrap/js/popper.min.js"></script>
+
+    <script src="../resources/cdn/adminlte/js/adminlte.min.js"></script>
+    <script src="../resources/cdn/bootstrap/js/bootstrap.min.js"></script>
+    <script src="../resources/cdn/sweetalert2/sweetalert2.all.min.js"></script>
+
+    <script src="../resources/Modal2.js"></script>
+    <script src="../resources/Utils.js"></script>
+    <script src="../js/molinete.js"></script>
+    <script>
+        let modal = new Modal();
+        let utils = new Utils();
+        let molinete = new Molinete();
+        window.onload = () =>{
+            
+        }
+    </script>
+</body>
+</html>

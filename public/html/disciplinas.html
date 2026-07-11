@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Horarios</title>
+
+    <link rel="stylesheet" href="../resources/cdn/bootstrap/css/bootstrap.min.css">
+    <link rel="stylesheet" href="../resources/cdn/adminlte/css/adminlte.min.css">
+    <link rel="stylesheet" href="../resources/cdn/font-awesome-6.6.0/css/all.min.css">
+    <link rel="stylesheet" href="../resources/cdn/font-awesome-6.6.0/css/brands.min.css">
+    <link rel="stylesheet" href="../css/main.css">
+    <style>
+        body{
+            /* background-color: #5e7dac !important; */
+        }
+    </style>
+</head>
+<body class="no-select">
+    <div class="container">
+        <div class="text-center mb-3">
+            <h1>Gimnasio FullTraining <small>by Juana Amico</small></h1>
+        </div>
+        <div class="row mb-3 text-center">
+            <div class="col">
+                <a href="inicio.html" class="btn btn-block btn-light">Inicio</a>
+            </div>
+            <div class="col">
+                <a href="usuarios.html" class="btn btn-block btn-light">Usuarios</a>
+            </div>
+            <div class="col">
+                <a href="disciplinas.html" class="btn btn-block btn-primary">Disciplinas</a>
+            </div>
+            <div class="col">
+                <a href="turnos.html" class="btn btn-block btn-light">Turnos</a>
+            </div>
+            <div class="col">
+                <a href="resumen.html" class="btn btn-block btn-light">Resumen</a>
+            </div>
+            <div class="col">
+                <a href="molinete.html" class="btn btn-block btn-light">Molinete</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="row">
+            <div class="col-6">
+                <div class="card card-primary card-outline">
+                    <div class="card-header font-weight-bold bg-light">
+                        Disciplinas
+                    </div>
+                    <div class="card-body">
+                        <div class="row mb-3">
+                            <div class="col">
+                                <button class="btn btn-primary btn-block" id="nuevo">Nuevo</button>
+                            </div>
+                            <div class="col">
+                                <button class="btn btn-primary btn-block" id="modificar">Modificar</button>
+                            </div>
+                            <div class="col">
+                                <button class="btn btn-primary btn-block" disabled id="eliminar">Eliminar</button>
+                            </div>
+                        </div>
+                        
+                        <div class="border" style="height: 400px; overflow-y: auto; overflow-x: hidden;">
+                            <table class="table table-sm">
+                                <thead class="thead-dark">
+                                    <tr>
+                                        <th>Nombre</th>
+                                        <th class="text-right">Habilitado</th>
+                                    </tr>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-6">
+                <div class="card card-primary card-outline">
+                    <div class="card-header font-weight-bold bg-light">
+                        Datos <span class="badge badge-info" id="accion"></span>
+                    </div>
+                    <div class="card-body" id="datos">
+                        <div class="form-group">
+                            <label for="">Nombre</label>
+                            <input type="text" class="form-control" id="nombre">
+                        </div>
+                        <div class="form-group">
+                            <label for="">Habilitado</label>
+                            <select class="form-control" id="habilitado">
+                                <option value="1">Sí</option>
+                                <option value="0">No</option>
+                            </select>
+                        </div>
+                        <div class="form-group d-none">
+                            <label for="">Precio</label>
+                            <input type="number" class="form-control" id="precio">
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table table-sm" id="tabla-horarios">
+                                <thead class="thead-dark">
+                                    <tr>
+                                        <th>Día</th>
+                                        <th></th>
+                                        <th></th>
+                                        <th></th>
+                                        <th></th>
+                                        <th></th>
+                                        <th></th>
+                                        <th></th>
+                                        <th></th>
+                                        <th></th>
+                                        <th></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>Domingo</td>
+                                        <td><input type="time" class='form-control'></td>
+                                        <td><input type="time" class='form-control'></td>
+                                        <td><input type="time" class='form-control'></td>
+                                        <td><input type="time" class='form-control'></td>
+                                        <td><input type="time" class='form-control'></td>
+                                        <td><input type="time" class='form-control'></td>
+                                        <td><input type="time" class='form-control'></td>
+                                        <td><input type="time" class='form-control'></td>
+                                        <td><input type="time" class='form-control'></td>
+                                        <td><input type="time" class='form-control'></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Lunes</td>
+                                        <td><input type="time" class='form-control'></td>
+                                        <td><input type="time" class='form-control'></td>
+                                        <td><input type="time" class='form-control'></td>
+                                        <td><input type="time" class='form-control'></td>
+                                        <td><input type="time" class='form-control'></td>
+                                        <td><input type="time" class='form-control'></td>
+                                        <td><input type="time" class='form-control'></td>
+                                        <td><input type="time" class='form-control'></td>
+                                        <td><input type="time" class='form-control'></td>
+                                        <td><input type="time" class='form-control'></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Martes</td>
+                                        <td><input type="time" class='form-control'></td>
+                                        <td><input type="time" class='form-control'></td>
+                                        <td><input type="time" class='form-control'></td>
+                                        <td><input type="time" class='form-control'></td>
+                                        <td><input type="time" class='form-control'></td>
+                                        <td><input type="time" class='form-control'></td>
+                                        <td><input type="time" class='form-control'></td>
+                                        <td><input type="time" class='form-control'></td>
+                                        <td><input type="time" class='form-control'></td>
+                                        <td><input type="time" class='form-control'></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Miércoles</td>
+                                        <td><input type="time" class='form-control'></td>
+                                        <td><input type="time" class='form-control'></td>
+                                        <td><input type="time" class='form-control'></td>
+                                        <td><input type="time" class='form-control'></td>
+                                        <td><input type="time" class='form-control'></td>
+                                        <td><input type="time" class='form-control'></td>
+                                        <td><input type="time" class='form-control'></td>
+                                        <td><input type="time" class='form-control'></td>
+                                        <td><input type="time" class='form-control'></td>
+                                        <td><input type="time" class='form-control'></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Jueves</td>
+                                        <td><input type="time" class='form-control'></td>
+                                        <td><input type="time" class='form-control'></td>
+                                        <td><input type="time" class='form-control'></td>
+                                        <td><input type="time" class='form-control'></td>
+                                        <td><input type="time" class='form-control'></td>
+                                        <td><input type="time" class='form-control'></td>
+                                        <td><input type="time" class='form-control'></td>
+                                        <td><input type="time" class='form-control'></td>
+                                        <td><input type="time" class='form-control'></td>
+                                        <td><input type="time" class='form-control'></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Viernes</td>
+                                        <td><input type="time" class='form-control'></td>
+                                        <td><input type="time" class='form-control'></td>
+                                        <td><input type="time" class='form-control'></td>
+                                        <td><input type="time" class='form-control'></td>
+                                        <td><input type="time" class='form-control'></td>
+                                        <td><input type="time" class='form-control'></td>
+                                        <td><input type="time" class='form-control'></td>
+                                        <td><input type="time" class='form-control'></td>
+                                        <td><input type="time" class='form-control'></td>
+                                        <td><input type="time" class='form-control'></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Sábado</td>
+                                        <td><input type="time" class='form-control'></td>
+                                        <td><input type="time" class='form-control'></td>
+                                        <td><input type="time" class='form-control'></td>
+                                        <td><input type="time" class='form-control'></td>
+                                        <td><input type="time" class='form-control'></td>
+                                        <td><input type="time" class='form-control'></td>
+                                        <td><input type="time" class='form-control'></td>
+                                        <td><input type="time" class='form-control'></td>
+                                        <td><input type="time" class='form-control'></td>
+                                        <td><input type="time" class='form-control'></td>
+                                    </tr>
+                                    
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="text-right">
+                            <button class="btn btn-primary" id="guardar">Guardar</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="../resources/cdn/jquery-3.7.1.min.js"></script>
+    <script src="../resources/cdn/bootstrap/js/popper.min.js"></script>
+
+    <script src="../resources/cdn/adminlte/js/adminlte.min.js"></script>
+    <script src="../resources/cdn/bootstrap/js/bootstrap.min.js"></script>
+    <script src="../resources/cdn/sweetalert2/sweetalert2.all.min.js"></script>
+
+    <script src="../resources/Modal2.js"></script>
+    <script src="../resources/Utils.js"></script>
+    <script src="../js/disciplinas.js"></script>
+    <script>
+        let modal = new Modal();
+        let utils = new Utils();
+        let disciplinas = new Disciplinas();
+        window.onload = () =>{
+            
+        }
+    </script>
+</body>
+</html>

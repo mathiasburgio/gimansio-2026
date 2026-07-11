@@ -1,0 +1,8 @@
+✅4- agregar funciones molinete (y adjuntar el exe comunicador)
+✅6- ver pasadas en turnos
+✅-Verificar los desde/Hasta por que si busco solo por desde >=now puedo pifearle
+✅-si se agrega fierros para un usuario con enrollNumber q se sincronice solo ese usuario
+✅-si se modifica un usuario con enrollNumber q se sincronice solo ese usuario
+✅-fecha debe coincidir mes a mes. Ej 5/ene hasta 5/feb. Si la fecha es 
+✅-sincronizar inteligente cada 1 hora. Si esta sincronizando q no permita sincronizar manualmente y q se vea en pantalla
+✅-pasar la sincronizacion al backend

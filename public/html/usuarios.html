@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Usuarios</title>
+
+    <link rel="stylesheet" href="../resources/cdn/bootstrap/css/bootstrap.min.css">
+    <link rel="stylesheet" href="../resources/cdn/adminlte/css/adminlte.min.css">
+    <link rel="stylesheet" href="../resources/cdn/font-awesome-6.6.0/css/all.min.css">
+    <link rel="stylesheet" href="../resources/cdn/font-awesome-6.6.0/css/brands.min.css">
+    <link rel="stylesheet" href="../css/main.css">
+
+    <style>
+        body{
+            /* background-color: #5e7dac !important; */
+        }
+    </style>
+</head>
+<body class="no-select">
+    <div class="container">
+        <div class="text-center mb-3">
+            <h1>Gimnasio FullTraining <small>by Juana Amico</small></h1>
+        </div>
+        <div class="row mb-3 text-center">
+            <div class="col">
+                <a href="inicio.html" class="btn btn-block btn-light">Inicio</a>
+            </div>
+            <div class="col">
+                <a href="usuarios.html" class="btn btn-block btn-primary">Usuarios</a>
+            </div>
+            <div class="col">
+                <a href="disciplinas.html" class="btn btn-block btn-light">Disciplinas</a>
+            </div>
+            <div class="col">
+                <a href="turnos.html" class="btn btn-block btn-light">Turnos</a>
+            </div>
+            <div class="col">
+                <a href="resumen.html" class="btn btn-block btn-light">Resumen</a>
+            </div>
+            <div class="col">
+                <a href="molinete.html" class="btn btn-block btn-light">Molinete</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="row">
+            <div class="col-6">
+                <div class="card card-primary card-outline">
+                    <div class="card-header font-weight-bold bg-light">
+                        Usuarios
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col">
+                                <button class="btn btn-primary btn-block" id="nuevo">Nuevo</button>
+                            </div>
+                            <div class="col">
+                                <button class="btn btn-primary btn-block" id="modificar">Modificar</button>
+                            </div>
+                            <div class="col">
+                                <button class="btn btn-primary btn-block" id="eliminar">Eliminar</button>
+                            </div>
+                        </div>
+                        <input type="search" class="form-control my-3" id="buscar" placeholder="Buscar...">
+                        <div class="border" style="height: 400px; overflow-y: auto; overflow-x: hidden;">
+                            <table class="table table-sm">
+                                <thead class="thead-dark">
+                                    <tr>
+                                        <th>Nombre</th>
+                                        <th>Email</th>
+                                        <th class="text-right">EnrollNumber</th>
+                                    </tr>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-6">
+                <div class="card card-primary card-outline">
+                    <div class="card-header font-weight-bold bg-light">
+                        Datos <span class="badge badge-info" id="accion"></span>
+                    </div>
+                    <div class="card-body" id="datos">
+                        <div class="form-group">
+                            <label for="">Nombre</label>
+                            <input type="text" class="form-control" id="nombre">
+                        </div>
+                        <div class="form-group">
+                            <label for="">Email</label>
+                            <input type="text" class="form-control" id="email">
+                        </div>
+                        <div class="form-group">
+                            <label for="">Contraseña</label>
+                            <input type="password" class="form-control" id="contrasena">
+                        </div>
+                        <div class="form-group">
+                            <label for="">Dirección</label>
+                            <input type="text" class="form-control" id="direccion">
+                        </div>
+                        <div class="form-group">
+                            <label for="">Teléfono</label>
+                            <input type="text" class="form-control" id="telefono">
+                        </div>
+                        <div class="form-group">
+                            <label for="">DNI</label>
+                            <input type="text" class="form-control" id="dni">
+                        </div>
+                        <div class="form-group">
+                            <label for="">EnrollNumber</label>
+                            <input type="text" class="form-control" id="enrollNumber">
+                        </div>
+                        <div class="form-group">
+                            <label for="">Es administrador</label>
+                            <select class="form-control" id="esAdmin">
+                                <option value="0">No</option>
+                                <option value="1">Si</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="">Es profesor</label>
+                            <select class="form-control" id="esProfe">
+                                <option value="0">No</option>
+                                <option value="1">Si</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="">Pase libre</label>
+                            <select class="form-control" id="paseLibre">
+                                <option value="0">No</option>
+                                <option value="1">Si</option>
+                            </select>
+                        </div>
+                        <div class="text-right">
+                            <button class="btn btn-primary" id="guardar">Guardar</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="../resources/cdn/jquery-3.7.1.min.js"></script>
+    <script src="../resources/cdn/bootstrap/js/popper.min.js"></script>
+
+    <script src="../resources/cdn/adminlte/js/adminlte.min.js"></script>
+    <script src="../resources/cdn/bootstrap/js/bootstrap.min.js"></script>
+    <script src="../resources/cdn/sweetalert2/sweetalert2.all.min.js"></script>
+
+    <script src="../resources/Modal2.js"></script>
+    <script src="../resources/Utils.js"></script>
+    <script src="../js/usuarios.js"></script>
+    <script>
+        let modal = new Modal();
+        let utils = new Utils();
+        let usuarios = new Usuarios();
+        window.onload = () =>{
+            
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,286 @@
+:root {
+    --GRIS_CLARO: #f0f0f0; 
+    --GRIS_MEDIO: #808080;
+    --GRIS_OSCURO: #575757;
+    --GRIS_MEDIO_DOS: #ada8a8;
+    --NEGRO: #0000;  
+    --BLANCO: #ffff; 
+    --DEGRADADO: linear-gradient(90deg, var(--GRIS_CLARO), var(--GRIS_OSCURO));
+}
+
+body {
+    margin: 0;
+    font-family: "Poppins", serif;
+    font-weight: 300;
+    font-style: normal;
+}
+
+/*MENU*/
+.menu {
+    background: var(--GRIS_MEDIO_DOS);
+    display: flex;
+    align-items: center;
+    justify-content: center; 
+    padding: 0 20px;
+    height: 120px; 
+    position: fixed; /* Menú fijo */
+    top: 0; 
+    left: 0;
+    width: 100%; 
+    z-index: 1000; 
+}
+.menu-logo {
+    position: absolute;
+    left: 30px;
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    align-items: center;
+}
+
+.logo-grande {
+    height: 150px;
+    transition: opacity 0.3s ease, height 0.3s ease;
+}
+
+.logo-chico {
+    height: 80px;
+    display: none; /* Oculto inicialmente */
+    transition: opacity 0.3s ease;
+}
+
+.menu.scrolled {
+    height: 100px; /* Altura reducida del menú */
+}
+
+.menu.scrolled .logo-grande {
+    opacity: 0;
+    height: 0;
+    overflow: hidden;
+}
+
+.menu.scrolled .logo-chico {
+    display: block;
+    opacity: 1;
+}
+.menu a {
+    color: white;
+    font-weight: 500;
+    text-decoration: none;
+    padding: 14px 20px;
+    display: block;
+    text-align: center;
+}
+.menu a:hover {
+    background-color: #808080;
+    color: var(--BLANCO);
+}
+.menu a.active {
+    background-color: #808080;
+}
+
+.nav-right {
+    position: absolute; 
+    right: 20px; 
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    gap: 10px;
+}
+
+.btn {
+    font-size: 1rem;
+    padding: 0.5rem 1rem;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.registry-btn {
+    background: black;
+    color: var(--GRIS_CLARO);
+}
+
+.registry-btn:hover {
+    background: var(--GRIS_OSCURO);
+    color: var(--GRIS_CLARO);
+}
+
+.login-btn {
+    background: black;
+    color: var(--GRIS_CLARO);
+}
+
+.login-btn:hover {
+    background: var(--GRIS_OSCURO);
+    color: var(--GRIS_CLARO);
+}
+
+.menu-links {
+    display: flex; 
+    gap: 30px;
+}
+
+.menu-links a {
+    font-size: 20px;
+}
+
+
+.icon-menu {
+    display: none; 
+}
+
+.menu-hamburguesa {
+    margin-left: 500%;
+}
+
+.menu-hamburguesa i {
+    color: black;
+    font-size: 25px;
+}
+
+.boton-flotante-wsp {
+    height: 70px;
+    width: 70px;
+    position: fixed;
+    bottom: 35px;
+    right: 35px;
+    background: green;
+    color: white;
+    border-radius: 50%;
+    font-size: 33px;
+    text-align: center;
+    z-index: 1000;
+    transition: opacity 0.3s;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); 
+    align-content: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.boton-flotante-wsp i {
+    font-size: 40px;
+    margin: 0;
+    padding: 0;
+}
+
+.boton-flotante-wsp:hover {
+    opacity: 0.8;
+    background: var(--GRIS_CLARO);
+    color: green;
+}
+
+@media (max-width: 768px) {
+    /*MENU HAMBURGUESA*/
+   
+    .menu {
+        position: fixed; /* Menú fijo */
+        height: 100px;
+        top: 0;
+        left: 0;
+        width: 100%;
+        z-index: 1000;
+        transition: height 0.3s ease; 
+    }
+
+    .icon-menu {
+        display: block; 
+        cursor: pointer;
+        margin-left: 10px; 
+        width: 30px;
+        height: 30px;
+    }
+
+    .menu-logo {
+        position: absolute;
+        left: 10px; 
+        top: 50%;
+        transform: translateY(-50%);
+        display: flex;
+        align-items: center;
+    }
+
+    .logo-grande {
+        display: block; 
+        height: 120px; 
+    }
+
+    .logo-chico {
+        display: none; 
+        height: 60px; 
+        transition: opacity 0.3s ease;
+    }
+
+    .menu.scrolled .logo-grande {
+        display: none; 
+    }
+
+    .menu.scrolled .logo-chico {
+        display: block;
+        opacity: 1;
+    }
+
+    .menu.scrolled {
+        height: 80px; 
+    }
+
+    .menu-links {
+        display: none; 
+        flex-direction: column; 
+        position: absolute;
+        top: 100px;
+        left: 0;
+        width: 100%;
+        background: var(--DEGRADADO); 
+        padding: 10px 0;
+        z-index: 1000;
+    }
+
+    .menu-links a {
+        padding: 10px 20px;
+        text-align: center;
+        width: 100%;
+    }
+
+    /* Para mostrar el menú cuando se haga click en el icono */
+    .menu-links.active {
+        display: flex;
+    }
+    .menu-links.active .botones-responsive {
+        display: block; /* Mostrar los botones solo cuando el menú está activo */
+    }
+    .botones-responsive button {
+        width: 90%; 
+        display: block; 
+        margin-bottom: 10px; 
+        margin: 10px auto;
+        background: var(--GRIS_CLARO);
+        border: 1px solid var(--GRIS_OSCURO);
+        color: var(--GRIS_OSCURO);
+        cursor: pointer;
+    }
+    .boton-flotante-wsp {
+        height: 50px;
+        width: 50px;
+        bottom: 20px;
+        right: 20px;
+    }
+
+    .boton-flotante-wsp i {
+        font-size: 30px; 
+    }
+}
+
+@media (min-width: 769px) {
+    .menu-links {
+        display: flex; /* Menú en fila en pantallas grandes */
+        justify-content: space-between;
+    }
+
+    /* Eliminar el menú hamburguesa en pantallas grandes */
+    .menu-hamburguesa {
+        display: none;
+    }
+}
