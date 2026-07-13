@@ -24,9 +24,7 @@ class Molinete{
             this.listarUsuarios();
         });
         $("#sincronizar").on("click", async (ev) => {
-            if(!this.conectado) return modal.message("No hay conexión con el molinete");
-            let inteligente = (ev.shiftKey);
-            await this.sincronizar(inteligente);
+            await this.modalSincronizar();
         });
 
         //recibe respuestas del SDK del molinete
@@ -65,13 +63,30 @@ class Molinete{
         let resp = await window.electronAPI.habilitarPasoMolinete(ms);
         console.log(resp);
     }
-    async sincronizar(full=false){
-        let confirm = await modal.yesno("La información se sincroniza automaticamente cada 1 hora. ¿Desea sincronizar los usuarios del molinete con la base de datos local?");
-        if(!confirm) return;
-        await modal.waiting("Sincronizando usuarios -> turnos(fierros/musculación) -> molinete...");
-        let resp = await window.electronAPI.sincronizarMolinete(full, false);
-        console.log(resp);
-        modal.hide(false);
+    async modalSincronizar(){
+        modal.show({
+            title: "Sincronización PC <-> molinete",
+            body: $("#modal-sincronizar").html(),
+        });
+
+        $("#modal #cancelar").on("click", () => modal.hide());
+        $("#modal #sincronizar").on("click", async ev => {
+            let ele = $(ev.currentTarget);
+            if(!$("#modal #metodo").val() || !$("#modal #limpiar").val()) return;
+            const inteligente = $("#modal #metodo").val() == "inteligente";
+            const limpiar = $("#modal #limpiar").val() == "si";
+            let resp = await modal.addPopover({querySelector: ele, type: "yesno", message: `¿Confirma proceder con la sincronización?`});
+            if(!resp) return;
+
+            modal.waiting2(true, "Sincronizando PC <-> molinete...");
+            const r = await window.electronAPI.sincronizarMolinete(inteligente, limpiar);
+            console.log(r);
+            modal.waiting2(false, "Sincronización finalizada");
+            modal.hide(false, ()=>{
+                if(!r.ok) return modal.message(`Error al sincronizar.`);
+                else modal.message(`Sincronización finalizada correctamente.`);
+            });
+        });
     }
     escribirConsola(msj="", full=false){
         if(full) $("#consola").html("");

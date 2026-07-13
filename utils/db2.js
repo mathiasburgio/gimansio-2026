@@ -36,9 +36,14 @@ const executeQuery = async (query, params) => {
     }
 };
 const getRegistro = async (clave) => {
-    const [rows] = await connection.query("SELECT * FROM registro WHERE clave = ?", [clave]);
-    if(rows.length === 1) return rows[0].valor;
-    else return null;
+    try{
+        const [rows] = await connection.query("SELECT * FROM registro WHERE clave = ?", [clave]);
+        if(rows.length === 1) return rows[0].valor;
+        else return null;
+    }catch(err){
+        logger.log("Error al obtener registro:", err);
+        return null;
+    }
 }
 const setRegistro = async (clave, valor) => {
     const existe = await getRegistro(clave);

@@ -251,6 +251,7 @@ async function ejecutarMolinete(accion, data = {}){
 }
 async function escribirRegistrosMolinete(str){
     const ahora = getDateTime(false);
+    if(Array.isArray(str)) str = str.join("<br>");
     registrosMolinete.push(ahora + " # " + str);
     if(registrosMolinete.length > 1000) registrosMolinete.shift();
     win.webContents.send("evento-sdk", {from: "backend", body: registrosMolinete.at(-1)});
@@ -290,11 +291,13 @@ ipcMain.handle("habilitar-paso-molinete", async (event, data) => {
     return resp;
 });
 ipcMain.handle("ejecutar-molinete", async (event, data) => {
-    const resp = await ejecutarMolinete(data.accion, data.params);
+    const resp = await ejecutarMolinete(data.comando, data.params);
     return resp;
 });
 ipcMain.handle("sincronizar-individual-molinete", async (event, data) => {
     let resp = [];
+    let respOk = false;
+    let adquirioLock = false; //es true si esta misma ejecucion adquirio el lock de sincronizacion, para poder liberarlo al final
     try{
         const { enrollNumber, habilitar } = data;
         if(!enrollNumber) throw "No se proporcionó un enrollNumber válido";
@@ -307,6 +310,7 @@ ipcMain.handle("sincronizar-individual-molinete", async (event, data) => {
                 throw "Ya hay una sincronización en curso, espere a que finalice";
             }
         }
+        adquirioLock = true;
         sincronizando.estado = true;
         sincronizando.iniciado = new Date();
 
@@ -325,6 +329,7 @@ ipcMain.handle("sincronizar-individual-molinete", async (event, data) => {
             //2. Actualizo la base de datos local
             await db.executeQuery(`UPDATE usuario SET paseHabilitado = ? WHERE enrollNumber = ?`, [habilitar ? 1 : 0, enrollNumber]);
             resp.push(`2. Base de datos local actualizada correctamente para el usuario ${enrollNumber}`);
+            respOk = true;
         }else{
             throw `Error al ${habilitar ? "habilitar" : "deshabilitar"} el usuario ${enrollNumber} en el molinete: ${respMolinete.toString()}`;
         }
@@ -333,11 +338,13 @@ ipcMain.handle("sincronizar-individual-molinete", async (event, data) => {
         resp.push("Error al sincronizar individual: " + err.toString());  
         logger.log("Error al sincronizar individual: " + err.toString(), "error");
     }finally{
-        sincronizando.estado = false;
-        sincronizando.iniciado = null;
+        if(adquirioLock){
+            sincronizando.estado = false;
+            sincronizando.iniciado = null;
+        }
 
-        registrosMolinete.push(getDateTime(false) + " # " + resp.join("<br>"));
-        return resp;
+        escribirRegistrosMolinete(resp.join("<br>"));
+        return {ok: respOk, resp: resp};
     }
 });
 
@@ -345,6 +352,8 @@ ipcMain.handle("sincronizar-individual-molinete", async (event, data) => {
 //HELPERS
 async function sincronizar(sincroInteligente=true, limpiarRegistros=false){
     let resp = [];
+    let respOk = false;
+    let adquirioLock = false; //es true si esta misma ejecucion adquirio el lock de sincronizacion, para poder liberarlo al final
     try{
         if(typeof sincroInteligente !== "boolean") throw "sincroInteligente debe ser un booleano";
         if(typeof limpiarRegistros !== "boolean") throw "limpiarRegistros debe ser un booleano";
@@ -359,6 +368,7 @@ async function sincronizar(sincroInteligente=true, limpiarRegistros=false){
                 throw "Ya hay una sincronización en curso, espere a que finalice";
             }
         }
+        adquirioLock = true;
         sincronizando.estado = true;
         sincronizando.iniciado = new Date();
 
@@ -399,8 +409,9 @@ async function sincronizar(sincroInteligente=true, limpiarRegistros=false){
         //4- Guardo en mi BD los registros que no existan
         let tRegistrarPases0 = performance.now();
         for(let log of logs){
-            let existe = misRegistros.find(r=> r.fecha === log.date);
-            if(!existe){
+            let existe = await db.executeQuery(`SELECT * FROM pase WHERE fecha = ?`, [log.date]);
+            //let existe = misRegistros.find(r=> r.fecha.toString() === log.date.toString());
+            if(!existe || existe.length === 0){
                 let q = `INSERT INTO pase SET 
                 usuarioId = ?, 
                 usuarioNombre=?,
@@ -450,32 +461,38 @@ async function sincronizar(sincroInteligente=true, limpiarRegistros=false){
         //7. Ejecuto los cambios en el molinete
         let ejecuciones = 0, habilitados = 0, deshabilitados = 0;
         let tEjecutarAcciones0 = performance.now();
-        for(let usuario of this.usuariosMolinete){
+        let usuariosMolinete = await ejecutarMolinete("obtener-usuarios-molinete");
+        if(typeof usuariosMolinete == "string") usuariosMolinete = JSON.parse(usuariosMolinete);
+        for(let usuario of usuariosMolinete){
             let usuarioLocal = objUsuariosLocales[usuario.enrollNumber];
             if(!usuarioLocal) continue; // no existe en mi BD local
 
             if(sincroInteligente){
                 let permitido = (usuarioLocal.paseLibre === 1) || (usuarioLocal.cantPases < usuarioLocal.dias);
                 if(permitido && !usuarioLocal.paseHabilitado){
-                    await ejecutarMolinete("habilitar-usuario-molinete", { enrollNumber: usuario.enrollNumber });
+                    let r = await ejecutarMolinete("habilitar-usuario-molinete", { enrollNumber: usuario.enrollNumber });
+                    if(r != "ok") throw `Error al habilitar el usuario ${usuario.enrollNumber} en el molinete: ${r.toString()}`;
                     await db.executeQuery(`UPDATE usuario SET paseHabilitado = 1 WHERE id = ?`, [usuarioLocal.id]);
                     ejecuciones++;
                     habilitados++;
                 } 
                 else if(!permitido && usuarioLocal.paseHabilitado) {
-                    await ejecutarMolinete("deshabilitar-usuario-molinete", { enrollNumber: usuario.enrollNumber });
+                    let r = await ejecutarMolinete("deshabilitar-usuario-molinete", { enrollNumber: usuario.enrollNumber });
+                    if(r != "ok") throw `Error al deshabilitar el usuario ${usuario.enrollNumber} en el molinete: ${r.toString()}`;
                     await db.executeQuery(`UPDATE usuario SET paseHabilitado = 0 WHERE id = ?`, [usuarioLocal.id]);
                     ejecuciones++;
                     deshabilitados++;
                 }
             }else{
                 if(usuarioLocal.paseLibre === 1 || usuarioLocal.cantPases < usuarioLocal.dias){
-                    await ejecutarMolinete("habilitar-usuario-molinete", { enrollNumber: usuario.enrollNumber });
+                    let r = await ejecutarMolinete("habilitar-usuario-molinete", { enrollNumber: usuario.enrollNumber });
+                    if(r != "ok") throw `Error al habilitar el usuario ${usuario.enrollNumber} en el molinete: ${r.toString()}`;
                     await db.executeQuery(`UPDATE usuario SET paseHabilitado = 1 WHERE id = ?`, [usuarioLocal.id]);
                     ejecuciones++;
                     habilitados++;
                 }else{
-                    await ejecutarMolinete("deshabilitar-usuario-molinete", { enrollNumber: usuario.enrollNumber });
+                    let r = await ejecutarMolinete("deshabilitar-usuario-molinete", { enrollNumber: usuario.enrollNumber });
+                    if(r != "ok") throw `Error al deshabilitar el usuario ${usuario.enrollNumber} en el molinete: ${r.toString()}`;
                     await db.executeQuery(`UPDATE usuario SET paseHabilitado = 0 WHERE id = ?`, [usuarioLocal.id]);
                     ejecuciones++;
                     deshabilitados++;
@@ -494,30 +511,39 @@ async function sincronizar(sincroInteligente=true, limpiarRegistros=false){
         }else{
             resp.push("8. No se borraron los registros del molinete (limpiarRegistros = false)");
         }
-
+        respOk = true;
         resp.push("--Sincronización finalizada correctamente--");
     }catch(err){
         resp.push("Error al sincronizar: " + err.toString());  
         logger.log("Error al sincronizar: " + err.message, "error");
     }finally{
-        sincronizando.estado = false;
-        sincronizando.iniciado = null;
-        registrosMolinete.push(resp.join("<br>"));
-        if(registrosMolinete.length > 1000) registrosMolinete = registrosMolinete.slice(registrosMolinete.length - 1000);
-
-        return resp;
+        if(adquirioLock){
+            sincronizando.estado = false;
+            sincronizando.iniciado = null;
+        }
+        escribirRegistrosMolinete(resp.join("<br>"));
+        return {ok: respOk, resp: resp};
     }
 }
 function verificarCantidadPasadas(registros){
+    //no importa si el usuario viene a las 12hs, 14.59, 16.59; el edgy case de que venga antes de agotar la ventana de 3hs lo dejo pasar como una sola vez. (No deberia darse en la realidad, y si se da, no es problema)
     const umbral = 3 * 60 * 60 * 1000; // 3 horas
-    const propFecha = "date"; // Propiedad que contiene la fecha en cada registro
+
+
+    let comienzoSemana = new Date();
+    comienzoSemana.setDate(comienzoSemana.getDate() - comienzoSemana.getDay());
+    comienzoSemana.setHours(0, 0, 0, 0);
 
     let contador = 0;
     registros
-    .sort((a,b)=> new Date(a[propFecha]) - new Date(b[propFecha]))
+    .sort((a,b)=> new Date(a.fecha) - new Date(b.fecha))
     .forEach((p, i) => {
-        let fx = new Date(p[propFecha]).getTime();
-        let fxAnterior = i > 0 ? new Date(registros[i - 1][propFecha]).getTime() : null;
+
+        //verifico solo los registros de la semana actual
+        if(new Date(p.fecha) < comienzoSemana) return;
+
+        let fx = new Date(p.fecha).getTime();
+        let fxAnterior = i > 0 ? new Date(registros[i - 1].fecha).getTime() : null;
 
         // si la diferencia es menor al umbral, no contamos esta pasada
         if(fxAnterior && (fx - fxAnterior) < umbral) return;
@@ -560,23 +586,25 @@ cron.schedule('0 * * * *', async () => {
 
         //cada X sincronizaciones sin limpieza, obliga a limpiar los logs
         if(contadorLimpiezaLogs > 100){
-            await db.setRegistro("contador-limpieza-logs", 0);
+            contadorLimpiezaLogs = 0;
+            await db.setRegistro("contador-limpieza-logs", contadorLimpiezaLogs);
             limpiarLogs = true;
-        }else{
-            await db.setRegistro("contador-limpieza-logs", contadorLimpiezaLogs + 1);
         }
 
         //cada X sincronizaciones inteligentes, obliga a hacer una full
         if(contadorSincroFull > 20){
-            await db.setRegistro("contador-sincro-full", 0);
+            contadorSincroFull = 0;
+            await db.setRegistro("contador-sincro-full", contadorSincroFull);
             sincroInteligente = false;
-        }else{
-            await db.setRegistro("contador-sincro-full", sincroInteligente + 1);
         }
 
         escribirRegistrosMolinete(`Iniciando sincronización automática del molinete (sincroInteligente: ${sincroInteligente}, limpiarLogs: ${limpiarLogs})`);
         let resp = await sincronizar(sincroInteligente, limpiarLogs);
-        logger.log("Sincronización automática del molinete finalizada");
+        if(resp.ok){
+            await db.setRegistro("contador-limpieza-logs", contadorLimpiezaLogs + 1);
+            await db.setRegistro("contador-sincro-full", contadorSincroFull + 1);
+        }
+        logger.log("Sincronización automática del molinete finalizada. ok=" + resp.ok);
     }catch(e){
         logger.log("Error al iniciar la sincronización automática del molinete: " + e.message, "error");
     }

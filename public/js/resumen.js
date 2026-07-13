@@ -129,7 +129,8 @@ class Resumen{
         })
 
 
-        $("#modal #fecha").val(new Date().toISOString().slice(0, 10));
+        //fecha solo a modo visual
+        //$("#modal #fecha").val(new Date().toISOString().slice(0, 10));
 
         $("#modal #acreditar").on("click", async ev=>{
             let usuarioLogeado = await window.electronAPI.getUsuarioLogeado();

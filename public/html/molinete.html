@@ -55,7 +55,6 @@
                 <div id="consola" style="height: 70vh; overflow-y: scroll;">
 
                 </div>
-                <small class="text-muted">Ayuda: <b>Shift + Sincronizar</b> = Fuerza sincro completa</small>
             </div>
         </div>
     </main>
@@ -76,6 +75,35 @@
                     </thead>
                     <tbody></tbody>
                 </table>
+            </div>
+        </div>
+        <div id="modal-sincronizar">
+            <div class="alert alert-info">
+                <i class="fas fa-exclamation-triangle"></i> Cada 1 hora se sincroniza todo automaticamente. Si queres forzar la sincronización, puedes hacerlo desde aquí.
+            </div>
+            <div class="form-group">
+                <label for="metodo">Método</label>
+                <select id="metodo" class="form-control">
+                    <option value="" selected disabled>-Seleccionar-</option>
+                    <option value="inteligente">Inteligente</option>
+                    <option value="completo">Completo</option>
+                </select>
+                <small class="text-muted">Completo: fuerza a todos los usuarios según corresponda<br>Inteligente: solo realiza cambios en quienes corresponda</small>
+            </div>
+            <div class="form-group">
+                <label for="">Limpiar registros de pases en molinete</label>
+                <select id="limpiar" class="form-control">
+                    <option value="si">Sí</option>
+                    <option value="no" selected>No</option>
+                </select>
+            </div>
+            <div class="row">
+                <div class="col">
+                    <button class="btn btn-flat btn-block btn-secondary" id="cancelar">Cancelar</button>
+                </div>
+                <div class="col">
+                    <button class="btn btn-flat btn-block btn-primary" id="sincronizar">Sincronizar</button>
+                </div>
             </div>
         </div>
     </div>

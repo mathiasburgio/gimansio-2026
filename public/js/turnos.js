@@ -537,7 +537,7 @@ class Turnos {
             }catch(err){
                 console.error(err);
                 window.electronAPI.writeLog("Error al registrar el cobro:", err);
-                menu.addPopover({querySelector: ele, message: "Ocurrió un error al registrar el cobro"});
+                modal.addPopover({querySelector: ele, message: "Ocurrió un error al registrar el cobro"});
             }
         });
     }
@@ -593,9 +593,13 @@ class Turnos {
             console.log(r);
             modal.waiting2(false, "Habilitando pase...");
             modal.hide(false, ()=>{
-                modal.message("Pase habilitado correctamente");
-                this.usuarioSeleccionado.paseHabilitado = true;
-                this.buscarUsuario();
+                if(r.ok){
+                    modal.message("Pase habilitado correctamente");
+                    this.usuarioSeleccionado.paseHabilitado = true;
+                    this.buscarUsuario();
+                }else{
+                    modal.message("Error al habilitar el pase: " + r.resp.join("<br>"));
+                }
             });
         });
         $("#modal #deshabilitar-pase").on("click", async ev=>{
@@ -604,9 +608,13 @@ class Turnos {
             console.log(r);
             modal.waiting2(false, "Deshabilitando pase...");
             modal.hide(false, ()=>{
-                modal.message("Pase deshabilitado correctamente");
-                this.usuarioSeleccionado.paseHabilitado = false;
-                this.buscarUsuario();
+                if(r.ok){
+                    modal.message("Pase deshabilitado correctamente");
+                    this.usuarioSeleccionado.paseHabilitado = false;
+                    this.buscarUsuario();
+                }else{
+                    modal.message("Error al deshabilitar el pase: " + r.resp.join("<br>"));
+                }
             });
         });
     }

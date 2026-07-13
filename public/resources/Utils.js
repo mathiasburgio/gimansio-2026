@@ -272,8 +272,6 @@ class Utils{
             if(resp === "pong") return true;
         }catch(err){
             return false;
-        }finally{
-            return false;
         }
     }
     arrayToObject(ar, id){
@@ -426,19 +424,6 @@ class Utils{
                 }, interval));
             }
         });
-    }
-    debounce(func, wait, immediate) {
-        let timeout;
-        return function(...args) {
-            const context = this;
-            const later = function() {
-                timeout = null;
-                if (!immediate) func.apply(context, args);
-            };
-            clearTimeout(timeout);
-            timeout = setTimeout(later, wait);
-            if (immediate && !timeout) func.apply(context, args);
-        };
     }
 
     sendWhatsapp(telefono, texto){

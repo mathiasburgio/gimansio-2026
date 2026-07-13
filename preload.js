@@ -25,9 +25,9 @@ contextBridge.exposeInMainWorld("electronAPI", {
     getConsolaMolinete: () => ipcRenderer.invoke("get-consola-molinete"),
     statusMolinete: () => ipcRenderer.invoke("status-molinete"),
     conectarMolinete: () => ipcRenderer.invoke("conectar-molinete"),
-    sincronizarMolinete: (sincroInteligente, limpiarLogs) => ipcRenderer.invoke("sincronizar-molinete", { sincroInteligente, limpiarLogs }),
+    sincronizarMolinete: (sincroInteligente, limpiarRegistros) => ipcRenderer.invoke("sincronizar-molinete", { sincroInteligente, limpiarRegistros }),
     obtenerUsuariosMolinete: () => ipcRenderer.invoke("obtener-usuarios-molinete"),
-    habilitarPasoMolinete: (ms=3000) => ipcRenderer.invoke("habilitar-paso-molinete", ms),
+    habilitarPasoMolinete: (ms=3000) => ipcRenderer.invoke("habilitar-paso-molinete", { ms }),
     ejecutarMolinete: (comando, params) => ipcRenderer.invoke("ejecutar-molinete", { comando, params }),
-    sincronizarIndividualMolinete: (usuarioId, habilitar) => ipcRenderer.invoke("sincronizar-individual-molinete", { usuarioId, habilitar }),
+    sincronizarIndividualMolinete: (enrollNumber, habilitar) => ipcRenderer.invoke("sincronizar-individual-molinete", { enrollNumber, habilitar }),
 });

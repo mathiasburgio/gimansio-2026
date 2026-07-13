@@ -124,11 +124,14 @@ class Usuarios {
         };
 
         if(!data.nombre) return modal.message("El nombre es obligatorio");
-        if(!data.email && data.esAdmin === 1) return modal.message("El email es obligatorio para administradores");
-        if(!data.contrasena && data.esAdmin === 1) return modal.message("La contraseña es obligatoria para administradores");
+        if(!data.email && data.esAdmin) return modal.message("El email es obligatorio para administradores");
+        if(!data.contrasena && data.esAdmin) return modal.message("La contraseña es obligatoria para administradores");
 
         try{
             if(this.esNuevo){
+                let existeEnrollNumber = data.enrollNumber && await window.electronAPI.executeQuery("SELECT * FROM usuario WHERE enrollNumber = ?", [data.enrollNumber]);
+                if(existeEnrollNumber && existeEnrollNumber.length > 0) throw "El EnrollNumber ya existe en otro usuario";
+
                 let resp = await window.electronAPI.executeQuery(
                     `INSERT INTO usuario SET 
                         nombre = ?, 
@@ -151,6 +154,9 @@ class Usuarios {
                 this.usuarios.push(nuevo[0]);
                 modal.message("Usuario creado correctamente");
             }else{
+                let existeEnrollNumber = data.enrollNumber && await window.electronAPI.executeQuery("SELECT * FROM usuario WHERE enrollNumber = ? AND id != ?", [data.enrollNumber, this.usuarioSeleccionado.id ]);
+                if(existeEnrollNumber && existeEnrollNumber.length > 0) throw "El EnrollNumber ya existe en otro usuario";
+
                 let resp = await window.electronAPI.executeQuery(
                     `UPDATE usuario SET 
                         nombre = ?, 
