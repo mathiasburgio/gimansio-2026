@@ -85,7 +85,6 @@ class Usuarios {
                 tbody.push(`
                     <tr data-id="${usuario.id}">
                         <td>${usuario.nombre}</td>
-                        <td>${usuario.email}</td>
                         <td class='text-right'>${usuario.enrollNumber || ""}</td>
                     </tr>
                 `);

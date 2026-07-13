@@ -568,22 +568,31 @@ class Turnos {
             buttons:"back",
         });
         $("#modal #usuario").html(this.usuarioSeleccionado.nombre);
-        let registros = await window.electronAPI.executeQuery("SELECT * FROM pase WHERE usuarioId = ? ORDER BY id DESC LIMIT 100", [this.usuarioSeleccionado.id]);
+        let registros = await window.electronAPI.executeQuery("SELECT * FROM pase WHERE usuarioId = ? ORDER BY fecha DESC LIMIT 100", [this.usuarioSeleccionado.id]);
         let tbody = [];
         let ultimaFecha = null;
         let color = "table-info";
-        registros.forEach(registro=>{
-            //verifico si registro.fecha tiene mas de 3hs de diff con ultimaFecha, si es asi cambio el color de la fila
-            if(ultimaFecha){
-                let diff = new Date(registro.fecha) - new Date(ultimaFecha);
-                if(diff > 3 * 60 * 60 * 1000){
+        registros.forEach(registro => {
+            // 1. Normalizamos la fecha reemplazando el espacio por 'T'
+            let fechaActual = new Date(registro.fecha.replace(" ", "T"));
+
+            // 2. Verificamos la diferencia de tiempo con la fila anterior
+            if (ultimaFecha) {
+                let diff = ultimaFecha - fechaActual; // el listado está ordenado de más reciente a más antiguo
+
+                if (diff >= 3 * 60 * 60 * 1000) {
                     color = (color === "table-info") ? "table-warning" : "table-info";
                 }
             }
-            let fecha = new Date(registro.fecha).toISOString().split("T")[0];
-            let hora = new Date(registro.fecha).toLocaleTimeString();
+
+            // 3. Formateamos fecha y hora para la tabla
+            let fecha = fechaActual.toISOString().split("T")[0];
+            let hora = fechaActual.toLocaleTimeString();
+
             tbody.push(`<tr class="${color}"><td>${fecha}</td><td>${hora}</td></tr>`);
-            ultimaFecha = registro.fecha;
+
+            // 4. Guardamos el objeto Date para la próxima iteración
+            ultimaFecha = fechaActual;
         });
         $("#modal #tabla-pasadas tbody").html(tbody.join(""));
 

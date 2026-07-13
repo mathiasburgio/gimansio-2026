@@ -71,6 +71,12 @@ class Resumen{
             let registro = this.registrosCobroPago.find(r=>r.id == id);
             if(typeof registro.multicaja == "string") registro.multicaja = JSON.parse(registro.multicaja);
 
+            let montoNoEfectivo = 0;
+            for(let aux in registro.multicaja){
+                let item = registro.multicaja[aux];
+                if(item.tipo != "efectivo") montoNoEfectivo += item.monto;
+            }
+
             modal.message(`
                 <b>Fecha</b>: ${new Date(registro.createdAt).toLocaleDateString()}<br>
                 <b>Abonador</b>: ${registro.usuarioAbonador || "-"}<br>
@@ -79,7 +85,7 @@ class Resumen{
 
                 <b>Monto</b>: $${utils.formatNumber(registro.monto)}<br>
                 <b>Efectivo</b>: $${utils.formatNumber(registro.multicaja?.efectivo || 0)}<br>
-                <b>Transferencia</b>: $${utils.formatNumber(registro.multicaja?.transferencia || 0)}<br>
+                <b>Transferencia</b>: $${utils.formatNumber(montoNoEfectivo || 0)}<br>
                 
                 <b>Detalle</b>: ${registro.detalle || "-"}
             `);
