@@ -1,4 +1,4 @@
-const { contextBridge, ipcRenderer  } = require("electron");
+const { contextBridge, ipcRenderer, webUtils } = require("electron");
 
 contextBridge.exposeInMainWorld("electronAPI", {
     isElectron: true,
@@ -13,7 +13,11 @@ contextBridge.exposeInMainWorld("electronAPI", {
     getRegistro: (clave) => ipcRenderer.invoke("get-registro", { clave }),
 
     makeBackup: () => ipcRenderer.invoke("make-backup"),
-    restoreBackup: () => ipcRenderer.invoke("restore-backup"),
+    restoreBackup: (file) => {
+        const backupPath = webUtils.getPathForFile(file);
+        if(!backupPath) throw new Error("No se pudo obtener la ruta del archivo de respaldo.");
+        return ipcRenderer.invoke("restore-backup", { path: backupPath });
+    },
     openDevTools: () => ipcRenderer.invoke("open-dev-tools"),
     getConfig: () => ipcRenderer.invoke("get-config"),
     

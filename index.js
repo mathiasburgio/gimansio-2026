@@ -154,7 +154,12 @@ ipcMain.handle("make-backup", async (event, data) => {
     return resp;
 });
 ipcMain.handle("restore-backup", async (event, data) => {
-    let resp = await db.restoreBackup();
+    const backupPath = data?.path;
+    if(typeof backupPath !== "string" || !backupPath) throw new Error("No se recibió un archivo de respaldo válido.");
+    if(path.extname(backupPath).toLowerCase() !== ".sql") throw new Error("El respaldo debe ser un archivo .sql.");
+    if(!fs.existsSync(backupPath)) throw new Error("No se encontró el archivo de respaldo seleccionado.");
+    let resp = await db.restoreBackup(backupPath);
+    logger.log(`Base de datos restaurada desde ${backupPath}`);
     return resp;
 });
 ipcMain.handle("open-dev-tools", async (event, data) => {

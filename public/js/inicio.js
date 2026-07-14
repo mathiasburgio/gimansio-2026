@@ -39,15 +39,20 @@ function restaurar(){
     let f = document.createElement("input");
     f.type = "file";
     f.accept = ".sql";
+    f.style.display = "none";
+    document.body.appendChild(f);
     f.onchange = async ev=>{
+        f.remove();
         try{
             let file = ev.currentTarget.files[0];
             if(!file) return;
-            let resp = await window.electronAPI.restoreBackup(file.path);
-            console.log(resp);
-            modal.message("Restauración completada. Reinicie la aplicación para que los cambios tengan efecto");
+            await modal.waiting("Restaurando respaldo...");
+            await window.electronAPI.restoreBackup(file);
+            modal.hide(false, ()=>modal.message("Restauración completada. Reinicie la aplicación para usar los datos restaurados."));
         }catch(err){
             console.error(err);
+            modal.hide(false, ()=>modal.message(`No se pudo restaurar el respaldo: ${err.message || err}`));
         }
     }
+    f.click();
 }

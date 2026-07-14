@@ -556,7 +556,7 @@ class Turnos {
             let value = Number($(opt).val());
             let existe = resp.find(r=>r.disciplinaId == value);
             let label = $(opt).html();
-            let [original, estado] = label.split("-");
+            let [original, estado] = label.split("-ACTIVO-");
             $(opt).html(original.trim());
             if(existe) $(opt).html(original.trim() + " -ACTIVO-");
         });
@@ -586,10 +586,13 @@ class Turnos {
             }
 
             // 3. Formateamos fecha y hora para la tabla
-            let fecha = fechaActual.toISOString().split("T")[0];
+            let fecha = new Date(registro.fecha).toLocaleDateString();
             let hora = fechaActual.toLocaleTimeString();
 
-            tbody.push(`<tr class="${color}"><td>${fecha}</td><td>${hora}</td></tr>`);
+            tbody.push(`<tr class="${color}">
+                <td>${fecha}</td>
+                <td>${hora}</td>
+            </tr>`);
 
             // 4. Guardamos el objeto Date para la próxima iteración
             ultimaFecha = fechaActual;

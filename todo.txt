@@ -6,4 +6,5 @@
 ✅-fecha debe coincidir mes a mes. Ej 5/ene hasta 5/feb. Si la fecha es 
 ✅-sincronizar inteligente cada 1 hora. Si esta sincronizando q no permita sincronizar manualmente y q se vea en pantalla
 ✅-pasar la sincronizacion al backend
-- Hacer el restore para migrar todo en mi PC y darles a ellos ya todo masticado
+-verificar turno.cobroId
+-verificar importacion de cobros que no muestra todo correctamente

@@ -54,16 +54,26 @@ const setRegistro = async (clave, valor) => {
     }
     return true;
 }
-const makeBackup = async (output) => {
+const getMysqldumpPath = async () => {
     let p = await getRegistro("mysqldump-path");
     if(!p){
-        p = `C:\\Program Files\\MySQL\\MySQL Server 8.0\\bin\\mysqldump.exe`;
-        await this.setRegistro("mysqldump-path", p);
+        const mysqlPath = await getRegistro("mysql-path");
+        p = mysqlPath
+            ? path.join(path.dirname(mysqlPath), "mysqldump.exe")
+            : "C:\\Program Files\\MySQL\\MySQL Server 8.0\\bin\\mysqldump.exe";
+        await setRegistro("mysqldump-path", p);
     }
+    return p;
+}
+
+const makeBackup = async (output) => {
+    let mysqlPath = await getMysqlPath();
+    let mysqDumpPath = path.join(mysqlPath, "mysqldump.exe");
+    if(!fs.existsSync(mysqDumpPath)) throw new Error(`No se encontró mysqldump.exe en: ${mysqDumpPath}`);
     
     return new Promise((resolve, reject) => {
 
-        const dump = spawn(p, [
+        const dump = spawn(mysqDumpPath, [
             "-u", conf.user,
             `-p${conf.password}`,
             conf.database
@@ -94,22 +104,58 @@ const makeBackup = async (output) => {
     });
 
 }
-const restoreBackup = async (input) => {
+const getMysqlPath = async () => {
     try{
-        const restore = spawn("mysql", [
-            "-u", conf.user,
-            `-p${conf.password}`,
-            conf.database
-        ]);
-
-        restore.stdin.pipe(fs.createReadStream(input));
-
-        restore.on("close", () => {
-            console.log("Restauración terminada");
-        });
+        let p = await getRegistro("mysql-tools-path");
+        if(!p) await setRegistro("mysql-tools-path", "C:\\Program Files\\MySQL\\MySQL Server 8.0\\bin\\");
+        return p || "C:\\Program Files\\MySQL\\MySQL Server 8.0\\bin\\";
     }catch(err){
-        logger.log("Error al restaurar el backup:", err);
+        logger.log("Error al obtener mysql-path:", err);
     }
+    return null;
+}
+
+const restoreBackup = async (input) => {
+    let mysqlPath = await getMysqlPath();
+    let mysqRestorePath = path.join(mysqlPath, "mysql.exe");
+    if(!fs.existsSync(mysqRestorePath)) throw new Error(`No se encontró mysql.exe en: ${mysqRestorePath}`);
+
+    return new Promise((resolve, reject) => {
+    let terminado = false;
+    const finalizarConError = err => {
+        if(terminado) return;
+        terminado = true;
+        logger.log(err, "restoreBackup");
+        reject(err);
+    };
+    const restore = spawn(mysqRestorePath, [
+        "-u", conf.user,
+        `-p${conf.password}`,
+        conf.database
+    ]);
+    const backup = fs.createReadStream(input);
+    let error = "";
+
+    restore.stderr.on("data", data => error += data.toString());
+    restore.on("error", err => {
+        finalizarConError(err);
+    });
+    backup.on("error", err => {
+        restore.kill();
+        finalizarConError(err);
+    });
+    restore.on("close", code => {
+        if(terminado) return;
+        if(code === 0){
+            terminado = true;
+            return resolve(true);
+        }
+        const err = new Error(error || `mysql finalizó con código ${code}.`);
+        finalizarConError(err);
+    });
+
+    backup.pipe(restore.stdin);
+    });
 }
 
 module.exports = { 
