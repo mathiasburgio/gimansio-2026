@@ -15,8 +15,9 @@ async function sincronizar(){
     const PROCESAR_USUARIOS = false;
     const PROCESAR_FIERROS = false;
     const PROCESAR_TURNOS = false;
-    const PROCESAR_COBROSPAGOS = false;
-    const PROCESAR_PASES = true;
+    const PROCESAR_COBROSPAGOS = true;
+    const PROCESAR_PASES = false;
+    const LIMPIEZA_FINAL = true;
 
     let aux = null;
     let params = null;
@@ -238,16 +239,19 @@ async function sincronizar(){
                 if(c.detalle.indexOf("Turno disciplina para") > -1) disciplinaNombre = c.detalle.split("-")[1].trim();
     
                 let multicaja = {};
-                let monto  = c.monto;
-                if(c.multicaja){
-                    let sumar = false;
-                    if(!monto) sumar = true;
+                if(c.multicaja && Object.keys(c.multicaja).length > 0){
                     for(let m of c.multicaja){
-                        multicaja[m.caja] = m.monto;
-                        if(sumar) monto += m.monto;
+                        if(m.caja == "efectivo") multicaja["efectivo"] = m.monto;
+                        else multicaja["transferencia"] = m.monto;
                     }
                 }else if(c.caja){
-                    multicaja[c.caja] = c.monto;
+                    if(c.caja == "efectivo") multicaja["efectivo"] = c.monto;
+                    else multicaja["transferencia"] = c.monto;
+                }
+
+                let monto = 0;
+                for(let aux in multicaja){
+                    monto += multicaja[aux];
                 }
 
                 params = [
@@ -282,17 +286,39 @@ async function sincronizar(){
                     oldId=?`,
                 params);
             }
+            console.log("Cobros migrados correctamente", cobropagos.length);         
+        }
 
-
+        //asocia dichas colecciones
+        if(LIMPIEZA_FINAL){
             let cobrosLocales = await sql.execute("SELECT * FROM cobropago");
+            let turnosLocales = await sql.execute("SELECT * FROM turno");
+            let cobropagosMongo = cobropagos;
+            console.log(cobropagosMongo.length);
+
             let cc = 0;
-            for(const c of cobrosLocales[0]){
-                if(c.turnoId){
-                    await sql.execute("UPDATE turno SET cobroId = ? WHERE id = ?", [c.id, c.turnoId]);
-                    cc++;
+            for(let cp of cobropagosMongo){
+                let ux = oldId_usuario[cp.usuarioAbonador?.usuarioId];
+                if(cp.turnoId){
+                    let t = turnosLocales[0].find(t=>t.oldId == cp.turnoId.toString());
+                    let c = cobrosLocales[0].find(c=>c.oldId == cp._id.toString());
+                    if(c && t){
+                        await sql.execute("UPDATE turno SET cobroId = ?, usuarioNombre = ? WHERE id = ?", [c.id, ux?.nombre || "?", t.id]);
+                        await sql.execute("UPDATE cobropago SET turnoId = ?, disciplinaNombre=?, usuarioAbonador=? WHERE id = ?", [t.id, t.disciplinaNombre, ux?.nombre || "?", c.id]);
+                        cc++;
+                    }
+                    /* if(t){
+                        
+                    }
+                    console.log(123);
+                    let c = cobrosLocales[0].find(c=>c.oldId == cp.cobroId.toString());
+                    if(c && t){
+                        
+                        cc++;
+                    } */
                 }
             }
-            console.log("Turnos actualizados con cobroId", cc);            
+            console.log("Limpieza final realizada correctamente. Registros: " + cc);
         }
 
 

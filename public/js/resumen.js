@@ -51,10 +51,13 @@ class Resumen{
                 this.accMontoDisciplina[r.disciplinaNombre] += r.monto;
             }
 
+            const fecha = new Date(r.createdAt).toLocaleDateString();
+            const hora = new Date(r.createdAt).toLocaleTimeString();
+
             tbody.push(`
                 <tr data-id="${r.id}">
                     <td>${r.accion == "cobro" ? "<span class='badge badge-success'>Cobro</span>" : "<span class='badge badge-danger'>Pago</span>"}</td>
-                    <td>${new Date(r.createdAt).toLocaleDateString()}</td>
+                    <td>${fecha + " " + hora}</td>
                     <td>${r?.usuarioAbonador || "-"}</td>
                     <td class="text-right">$${utils.formatNumber(r.monto)}</td>
                     <td class="text-right font-weight-bold">$${utils.formatNumber(saldo)}</td>
@@ -77,15 +80,18 @@ class Resumen{
                 if(item.tipo != "efectivo") montoNoEfectivo += item.monto;
             }
 
+            const fecha = new Date(registro.createdAt).toLocaleDateString();
+            const hora = new Date(registro.createdAt).toLocaleTimeString();
+
             modal.message(`
-                <b>Fecha</b>: ${new Date(registro.createdAt).toLocaleDateString()}<br>
+                <b>Fecha</b>: ${fecha + " " + hora}<br>
                 <b>Abonador</b>: ${registro.usuarioAbonador || "-"}<br>
                 <b>Cobrador</b>: ${registro.usuarioCobrador || "-"}<br>
                 <b>Acción</b>: ${registro.accion == "cobro" ? "Cobro" : "Pago"}<br>
 
-                <b>Monto</b>: $${utils.formatNumber(registro.monto)}<br>
                 <b>Efectivo</b>: $${utils.formatNumber(registro.multicaja?.efectivo || 0)}<br>
                 <b>Transferencia</b>: $${utils.formatNumber(montoNoEfectivo || 0)}<br>
+                <span class='bg-success px-1'><b>Monto</b>: $${utils.formatNumber(registro.monto)}</span><br>
                 
                 <b>Detalle</b>: ${registro.detalle || "-"}
             `);

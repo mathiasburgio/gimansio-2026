@@ -66,6 +66,23 @@ const getMysqldumpPath = async () => {
     return p;
 }
 
+const limpiarBackupsAntiguos = (output) => {
+    try{
+        const directorio = path.dirname(output);
+        const backups = fs.readdirSync(directorio, { withFileTypes: true })
+            .filter(archivo => archivo.isFile() && /^backup-.*\.sql$/i.test(archivo.name))
+            .map(archivo => {
+                const archivoPath = path.join(directorio, archivo.name);
+                return { path: archivoPath, fecha: fs.statSync(archivoPath).mtimeMs };
+            })
+            .sort((a, b) => b.fecha - a.fecha);
+
+        backups.slice(30).forEach(backup => fs.unlinkSync(backup.path));
+    }catch(err){
+        logger.log(err, "limpiarBackupsAntiguos");
+    }
+}
+
 const makeBackup = async (output) => {
     let mysqlPath = await getMysqlPath();
     let mysqDumpPath = path.join(mysqlPath, "mysqldump.exe");
@@ -94,6 +111,7 @@ const makeBackup = async (output) => {
 
             if (code === 0) {
                 console.log("Backup terminado");
+                limpiarBackupsAntiguos(output);
                 resolve();
             } else {
                 reject(new Error(error || `mysqldump terminó con código ${code}`));
