@@ -17,7 +17,7 @@ class Usuarios {
             this.nuevo();
         });
         $("#modificar").on("click", () => {
-            if(!this.usuarioSeleccionado) return modal.message("Seleccione un usuario para modificar");
+            return modal.message("Seleccione un usuario para modificar");
             this.modificar();
         });
         $("#eliminar").on("click", () => {
