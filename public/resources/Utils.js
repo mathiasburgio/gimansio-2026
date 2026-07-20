@@ -441,6 +441,44 @@ class Utils{
     invertirFecha(fecha){
         return fecha.split("-").reverse().join("/");
     }
+    formatearFecha(val = new Date(), formato = "ar", hora = false){
+        let fecha;
+        if(val instanceof Date){
+            fecha = new Date(val.getTime());
+        }else if(typeof val === "string"){
+            const partes = val.match(/^(\d{4})-(\d{2})-(\d{2})(?:[ T](\d{2}):(\d{2})(?::(\d{2}))?)?/);
+            if(partes){
+                fecha = new Date(
+                    Number(partes[1]),
+                    Number(partes[2]) - 1,
+                    Number(partes[3]),
+                    Number(partes[4] || 0),
+                    Number(partes[5] || 0),
+                    Number(partes[6] || 0)
+                );
+            }else{
+                fecha = new Date(val);
+            }
+        }else{
+            fecha = new Date(val);
+        }
+
+        if(Number.isNaN(fecha.getTime())) return "";
+
+        const anio = fecha.getFullYear();
+        const mes = String(fecha.getMonth() + 1).padStart(2, "0");
+        const dia = String(fecha.getDate()).padStart(2, "0");
+        const fechaFormateada = formato.toLowerCase() === "ar"
+            ? `${dia}/${mes}/${anio}`
+            : `${anio}-${mes}-${dia}`;
+
+        if(!hora) return fechaFormateada;
+
+        const horas = String(fecha.getHours()).padStart(2, "0");
+        const minutos = String(fecha.getMinutes()).padStart(2, "0");
+        const segundos = String(fecha.getSeconds()).padStart(2, "0");
+        return `${fechaFormateada} ${horas}:${minutos}:${segundos}`;
+    }
     verificarCantidadPasadas(registros){
         const umbral = 3 * 60 * 60 * 1000; // 3 horas
         const propFecha = "date"; // Propiedad que contiene la fecha en cada registro

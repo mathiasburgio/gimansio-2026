@@ -39,6 +39,8 @@ class Molinete{
 
         //verifico estado de conexion
         this.verificarEstadoMolinete();
+        // Consulto cada 3 segundos el estado del backend para reflejar si el molinete está conectado.
+        setInterval(() => this.verificarEstadoMolinete(), 3000);
     }
     async verificarEstadoMolinete(){
         const statusMolinete = await window.electronAPI.statusMolinete();

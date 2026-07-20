@@ -8,7 +8,7 @@ class Resumen{
         this.init();
     }
     init(){
-        let anioMes = new Date().toISOString().slice(0, 7);
+        let anioMes = utils.formatearFecha(new Date(), "usa").slice(0, 7);
         $("#mes").val(anioMes);
 
         $("#mes").on("change", async () => {
@@ -51,8 +51,7 @@ class Resumen{
                 this.accMontoDisciplina[r.disciplinaNombre] += r.monto;
             }
 
-            const fecha = new Date(r.createdAt).toLocaleDateString();
-            const hora = new Date(r.createdAt).toLocaleTimeString();
+            const [fecha, hora] = utils.formatearFecha(r.createdAt, "ar", true).split(" ");
 
             tbody.push(`
                 <tr data-id="${r.id}">
@@ -74,14 +73,10 @@ class Resumen{
             let registro = this.registrosCobroPago.find(r=>r.id == id);
             if(typeof registro.multicaja == "string") registro.multicaja = JSON.parse(registro.multicaja);
 
-            let montoNoEfectivo = 0;
-            for(let aux in registro.multicaja){
-                let item = registro.multicaja[aux];
-                if(item.tipo != "efectivo") montoNoEfectivo += item.monto;
-            }
+            const efectivo = Number(registro.multicaja?.efectivo || 0);
+            const transferencia = Number(registro.multicaja?.transferencia || 0);
 
-            const fecha = new Date(registro.createdAt).toLocaleDateString();
-            const hora = new Date(registro.createdAt).toLocaleTimeString();
+            const [fecha, hora] = utils.formatearFecha(registro.createdAt, "ar", true).split(" ");
 
             modal.message(`
                 <b>Fecha</b>: ${fecha + " " + hora}<br>
@@ -89,8 +84,8 @@ class Resumen{
                 <b>Cobrador</b>: ${registro.usuarioCobrador || "-"}<br>
                 <b>Acción</b>: ${registro.accion == "cobro" ? "Cobro" : "Pago"}<br>
 
-                <b>Efectivo</b>: $${utils.formatNumber(registro.multicaja?.efectivo || 0)}<br>
-                <b>Transferencia</b>: $${utils.formatNumber(montoNoEfectivo || 0)}<br>
+                <b>Efectivo</b>: $${utils.formatNumber(efectivo)}<br>
+                <b>Transferencia</b>: $${utils.formatNumber(transferencia)}<br>
                 <span class='bg-success px-1'><b>Monto</b>: $${utils.formatNumber(registro.monto)}</span><br>
                 
                 <b>Detalle</b>: ${registro.detalle || "-"}

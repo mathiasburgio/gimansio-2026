@@ -22,7 +22,7 @@ async function iniciarSesion(){
         const contrasena = $("#contrasena").val();
 
         //intento iniciar
-        let resp = await window.electronAPI.executeQuery("SELECT * FROM usuario WHERE email = ? AND contrasena = ?", [email, contrasena]);
+        let resp = await window.electronAPI.executeQuery("SELECT * FROM usuario WHERE email = ? AND contrasena = ? AND eliminado = 0", [email, contrasena]);
         console.log(resp);
 
         //grabo credenciales localmente

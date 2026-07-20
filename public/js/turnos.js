@@ -14,11 +14,12 @@ class Turnos {
         this.usuarios = await window.electronAPI.executeQuery("SELECT * FROM usuario WHERE eliminado = 0");
         await this.verificarPasesDisponibles();
 
-        this.disciplinas = await window.electronAPI.executeQuery("SELECT * FROM disciplina WHERE eliminado = 0 AND habilitado = 1");
+        this.disciplinas = await window.electronAPI.executeQuery("SELECT * FROM disciplina WHERE eliminado = 0");
         this.disciplinas.splice(0, 0, { id: -1, nombre: "fierros", diasHorarios: "[[], [], [], [], [], [], []]" }); //agrego fierros al principio
         this.disciplinas.forEach(d=>{
             d.diasHorarios = JSON.parse(d.diasHorarios);
-            $("#disciplina").append(`<option value="${d.id}">${d.nombre}</option>`);
+            const deshabilitada = d.id !== -1 && !utils.getBoolean(d.habilitado);
+            $("#disciplina").append(`<option value="${d.id}" ${deshabilitada ? "disabled" : ""}>${d.nombre}${deshabilitada ? " (deshabilitada)" : ""}</option>`);
         });
 
         $("#buscar").on("input", () => {
@@ -74,9 +75,9 @@ class Turnos {
         });
 
         $("#desde").change(ev=>{
-            let desde = new Date($(ev.currentTarget).val());
-            let proximoMes = new Date(desde.getFullYear(), desde.getMonth() + 1, desde.getDate());
-            $("#hasta").val(proximoMes.toISOString().split("T")[0]);
+            const desde = new Date(`${$(ev.currentTarget).val()}T00:00:00`);
+            const proximoMes = this.obtenerMismoDiaMesSiguiente(desde);
+            $("#hasta").val(utils.formatearFecha(proximoMes, "usa"));
         })
 
         $("#bt-historial-molinete").on("click", () => {
@@ -151,13 +152,12 @@ class Turnos {
         $("#modal table tbody").html("");
         
         //obtengo la fecha sin hora para comparar
-        let hoy = new Date();
-        hoy = hoy.toISOString().split("T")[0];
+        let hoy = utils.formatearFecha(new Date(), "usa");
 
         let tbody = [];
         registros.forEach(registro=>{
-            let _desde = new Date(registro.desde).toISOString().split("T")[0];
-            let _hasta = new Date(registro.hasta).toISOString().split("T")[0];
+            let _desde = utils.formatearFecha(registro.desde, "usa");
+            let _hasta = utils.formatearFecha(registro.hasta, "usa");
             let activo = (_desde <= hoy && _hasta >= hoy) ? true : false;
             if(utils.getBoolean(registro.cancelado) == true) activo = false;
 
@@ -220,16 +220,15 @@ class Turnos {
         }
         $("#modal #horario").html(opt);
 
-        let hoy = new Date();
-        hoy = hoy.toISOString().split("T")[0];
+        let hoy = utils.formatearFecha(new Date(), "usa");
 
         //verico posterimmente si esta "cancelado" (en el filtro)
         let q = `SELECT * from turno where disciplinaId = ? AND eliminado = 0 AND hasta >= ? ORDER BY id DESC LIMIT 1000`;
         let p = [this.disciplinaSeleccionada.id, hoy];
         let registros = await window.electronAPI.executeQuery(q, p);
         registros.forEach(registro=>{
-            registro._desde = new Date(registro.desde).toISOString().split("T")[0];
-            registro._hasta = new Date(registro.hasta).toISOString().split("T")[0];
+            registro._desde = utils.formatearFecha(registro.desde, "usa");
+            registro._hasta = utils.formatearFecha(registro.hasta, "usa");
             registro.diasHorarios = JSON.parse(registro.diasHorarios);
         });
         console.log(registros);
@@ -282,8 +281,8 @@ class Turnos {
         let registro = await window.electronAPI.executeQuery("SELECT * FROM turno WHERE usuarioId = ? AND disciplinaId = ? AND eliminado = 0 ORDER BY id DESC LIMIT 1", [this.usuarioSeleccionado.id, this.disciplinaSeleccionada.id]);
         if(registro.length === 1){
             let turno = registro[0];
-            $("#desde").val(new Date(turno.desde).toISOString().split("T")[0]);
-            $("#hasta").val(new Date(turno.hasta).toISOString().split("T")[0]);
+            $("#desde").val(utils.formatearFecha(turno.desde, "usa"));
+            $("#hasta").val(utils.formatearFecha(turno.hasta, "usa"));
             $("#cobrado").val(utils.getBoolean(turno.cobrado) ? "Sí" : "No");
             $("#cancelado").val(utils.getBoolean(turno.cancelado) ? "Sí" : "No");
             $("#dias").val(turno.dias);
@@ -352,10 +351,10 @@ class Turnos {
 
 
         let hoy = new Date();
-        let anioMesDia = hoy.toISOString().split("T")[0];
+        let anioMesDia = utils.formatearFecha(hoy, "usa");
         $("#desde").val(anioMesDia);
-        let proximoMes = new Date(hoy.getFullYear(), hoy.getMonth() + 1, hoy.getDate());
-        $("#hasta").val(proximoMes.toISOString().split("T")[0]);
+        let proximoMes = this.obtenerMismoDiaMesSiguiente(hoy);
+        $("#hasta").val(utils.formatearFecha(proximoMes, "usa"));
         
         $("#cobrado").val("No");
         $("#cancelado").val("No");
@@ -398,6 +397,12 @@ class Turnos {
             let c = $("#tabla-horarios .table-primary").length;
             $("#dias").val(c);
         });
+    }
+    obtenerMismoDiaMesSiguiente(fecha){
+        const anio = fecha.getFullYear();
+        const mesDestino = fecha.getMonth() + 1;
+        const ultimoDiaMesDestino = new Date(anio, mesDestino + 1, 0).getDate();
+        return new Date(anio, mesDestino, Math.min(fecha.getDate(), ultimoDiaMesDestino));
     }
     async guardar(){
         try{
@@ -497,7 +502,7 @@ class Turnos {
 
             let usuarioLogeado = await window.electronAPI.getUsuarioLogeado();
             let turno = await window.electronAPI.executeQuery("SELECT * FROM turno WHERE id = ?", [turnoId]);
-            let disciplina = this.disciplinas.find(d=>d.id == turno[0].disciplinaId);
+            let disciplinaNombre = turno[0].disciplinaNombre;
 
             try{
                 let q = `UPDATE turno SET cobrado = 1 WHERE id = ?`;
@@ -519,9 +524,9 @@ class Turnos {
                     createdAt = NOW()`;
                 let p2 = [
                     (efectivo + transferencia),
-                    'Cobro de turno ' + disciplina.nombre,
+                    'Cobro de turno ' + disciplinaNombre,
                     turnoId,
-                    disciplina.nombre,
+                    disciplinaNombre,
                     usuarioLogeado.nombre,
                     this.usuarioSeleccionado.nombre,
                     usuarioLogeado.id,
@@ -542,7 +547,7 @@ class Turnos {
         });
     }
     async verificarPasesDisponibles(){
-        let pasesDisponiblesFierros = await window.electronAPI.executeQuery("SELECT * FROM turno WHERE eliminado = 0 AND cancelado = 0 AND disciplinaId = -1 AND hasta >= ?", [new Date().toISOString().split("T")[0]]);
+        let pasesDisponiblesFierros = await window.electronAPI.executeQuery("SELECT * FROM turno WHERE eliminado = 0 AND cancelado = 0 AND disciplinaId = -1 AND hasta >= ?", [utils.formatearFecha(new Date(), "usa")]);
         pasesDisponiblesFierros.forEach(pase=>{
             let usuario = this.usuarios.find(u=>u.id == pase.usuarioId);
             if(usuario) usuario.pasesDisponibles = pase.dias;
@@ -550,7 +555,7 @@ class Turnos {
         this.buscarUsuario();
     }
     async verificarDisciplinasConTurnos(){
-        let hoy = new Date().toISOString().split("T")[0];
+        let hoy = utils.formatearFecha(new Date(), "usa");
         let resp = await window.electronAPI.executeQuery("SELECT * FROM turno WHERE cancelado = 0 AND eliminado = 0 AND usuarioId = ? AND desde <= ? AND hasta >= ?", [this.usuarioSeleccionado.id, hoy, hoy]);
         $("#disciplina option").each((ind, opt)=>{
             let value = Number($(opt).val());
@@ -586,8 +591,7 @@ class Turnos {
             }
 
             // 3. Formateamos fecha y hora para la tabla
-            let fecha = new Date(registro.fecha).toLocaleDateString();
-            let hora = fechaActual.toLocaleTimeString();
+            let [fecha, hora] = utils.formatearFecha(registro.fecha, "ar", true).split(" ");
 
             tbody.push(`<tr class="${color}">
                 <td>${fecha}</td>

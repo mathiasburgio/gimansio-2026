@@ -17,8 +17,7 @@ class Usuarios {
             this.nuevo();
         });
         $("#modificar").on("click", () => {
-            return modal.message("Seleccione un usuario para modificar");
-            this.modificar();
+            return modal.message("Para modificar un usuario selecciónelo, edite los campos y guarde.");
         });
         $("#eliminar").on("click", () => {
             if(!this.usuarioSeleccionado) return modal.message("Seleccione un usuario para eliminar");
@@ -50,6 +49,8 @@ class Usuarios {
         this.esNuevo = false;
     }
     async eliminar(){
+        const usuarioActual = await window.electronAPI.executeQuery("SELECT paseHabilitado FROM usuario WHERE id = ?", [this.usuarioSeleccionado.id]);
+        if(utils.getBoolean(usuarioActual[0]?.paseHabilitado)) return modal.message("No se puede eliminar un usuario con el pase habilitado. Deshabilite el pase previamente.");
         let resp = await modal.yesno("¿Está seguro que desea eliminar el usuario seleccionado?");
         if(!resp) return;
         try{
