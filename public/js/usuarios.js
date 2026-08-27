@@ -7,6 +7,7 @@ class Usuarios {
     }
 
     async init() {
+        document.title = "Usuarios - v" + await window.electronAPI.getVersion();
         this.usuarioLogeado = await window.electronAPI.getUsuarioLogeado();
         console.log(this.usuarioLogeado);
         this.usuarios = await window.electronAPI.executeQuery("SELECT * FROM usuario WHERE eliminado = 0");

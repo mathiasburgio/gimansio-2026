@@ -4,9 +4,10 @@ class Disciplinas {
         this.disciplinaSeleccionada = null;
         this.esNuevo = null;
         this.init();
+        
     }
     async init() {
-
+        document.title = "Disciplinas - v" + await window.electronAPI.getVersion();
         this.disciplinas = await window.electronAPI.executeQuery("SELECT * FROM disciplina WHERE eliminado = 0");
         this.buscar();
 

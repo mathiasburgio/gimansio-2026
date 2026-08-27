@@ -1,7 +1,7 @@
 var modal = new Modal();
 var utils = new Utils();
 
-window.onload = () => {
+window.onload = async () => {
     let recordar = localStorage.getItem("recordar-credenciales");
     if(recordar){
         recordar = JSON.parse(recordar);
@@ -15,6 +15,8 @@ window.onload = () => {
         await iniciarSesion();
         $(ev.currentTarget).attr("disabled", false);
     });
+
+    document.title = "Disciplinas - v" + await window.electronAPI.getVersion();
 }
 async function iniciarSesion(){
     try{

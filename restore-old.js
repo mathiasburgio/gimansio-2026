@@ -12,11 +12,11 @@ let mongo = null;
 
 async function sincronizar(){
 
-    const PROCESAR_USUARIOS = false;
-    const PROCESAR_FIERROS = false;
-    const PROCESAR_TURNOS = false;
+    const PROCESAR_USUARIOS = true;
+    const PROCESAR_FIERROS = true;
+    const PROCESAR_TURNOS = true;
     const PROCESAR_COBROSPAGOS = true;
-    const PROCESAR_PASES = false;
+    const PROCESAR_PASES = true;
     const LIMPIEZA_FINAL = true;
 
     let aux = null;

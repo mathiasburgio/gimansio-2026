@@ -2,6 +2,7 @@ const { contextBridge, ipcRenderer, webUtils } = require("electron");
 
 contextBridge.exposeInMainWorld("electronAPI", {
     isElectron: true,
+    getVersion: () => ipcRenderer.invoke("get-version"),
     getLog: () => ipcRenderer.invoke("get-log"),
     writeLog: (message, ...args) => ipcRenderer.invoke("write-log", { message, args }),
 

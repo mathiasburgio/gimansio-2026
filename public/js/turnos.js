@@ -10,7 +10,7 @@ class Turnos {
     }
 
     async init() {
-
+        document.title = "Turnos - v" + await window.electronAPI.getVersion();
         this.usuarios = await window.electronAPI.executeQuery("SELECT * FROM usuario WHERE eliminado = 0");
         await this.verificarPasesDisponibles();
 
@@ -112,7 +112,7 @@ class Turnos {
                 let pases = "-";
                 if(utils.getBoolean(usuario.paseLibre)) pases = "Libre";
                 else{
-                    if(usuario.pasesDisponibles > 0) pases = "?/" + usuario.pasesDisponibles;
+                    if(usuario.pasesDisponibles > 0) pases = `${usuario.cantPases || 0}/${usuario.pasesDisponibles}`;
                 }
 
                 tbody.push(`
@@ -547,10 +547,26 @@ class Turnos {
         });
     }
     async verificarPasesDisponibles(){
-        let pasesDisponiblesFierros = await window.electronAPI.executeQuery("SELECT * FROM turno WHERE eliminado = 0 AND cancelado = 0 AND disciplinaId = -1 AND hasta >= ?", [utils.formatearFecha(new Date(), "usa")]);
-        pasesDisponiblesFierros.forEach(pase=>{
-            let usuario = this.usuarios.find(u=>u.id == pase.usuarioId);
-            if(usuario) usuario.pasesDisponibles = pase.dias;
+        const hoy = new Date();
+        const hoyUSA = utils.formatearFecha(hoy, "usa");
+        const comienzoSemana = new Date(hoy);
+        comienzoSemana.setDate(comienzoSemana.getDate() - comienzoSemana.getDay());
+        comienzoSemana.setHours(0, 0, 0, 0);
+
+        const turnosFierros = await window.electronAPI.executeQuery(
+            "SELECT * FROM turno WHERE eliminado = 0 AND cancelado = 0 AND disciplinaId = -1 AND desde <= ? AND hasta >= ? ORDER BY id DESC",
+            [hoyUSA, hoyUSA]
+        );
+        const pasadasSemana = await window.electronAPI.executeQuery(
+            "SELECT * FROM pase WHERE fecha >= ? ORDER BY fecha ASC",
+            [utils.formatearFecha(comienzoSemana, "usa", true)]
+        );
+
+        this.usuarios.forEach(usuario=>{
+            const turno = turnosFierros.find(t=>t.usuarioId == usuario.id);
+            const pasadasUsuario = pasadasSemana.filter(p=>p.enrollNumber == usuario.enrollNumber);
+            usuario.pasesDisponibles = turno?.dias || 0;
+            usuario.cantPases = utils.verificarCantidadPasadas(pasadasUsuario);
         });
         this.buscarUsuario();
     }

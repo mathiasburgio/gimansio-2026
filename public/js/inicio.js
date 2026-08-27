@@ -1,5 +1,8 @@
 var modal = new Modal();
 
+//asigno la version de manera crota
+(async()=>{ document.title = "Inicio - v" + await window.electronAPI.getVersion() })();
+
 let bufferKeys = "";
 $("body").on("keydown", async ev=>{
     bufferKeys += ev.key;

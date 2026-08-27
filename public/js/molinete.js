@@ -5,6 +5,8 @@ class Molinete{
         this.init();
     }
     async init(){
+        document.title = "Molinete - v" + await window.electronAPI.getVersion();
+
         $("#reconectar").on("click", async ev => {
             let ele = $(ev.currentTarget);
             ele.prop("disabled", true);
@@ -97,7 +99,15 @@ class Molinete{
             const aux = msj.split("#");
             const fechaHora = aux[0];
             const texto = aux.slice(1).join(" ");
-
+            let json = texto;
+            try{
+                json = JSON.parse(texto);
+                if(json.event) texto = ` [Evento: ${json.event}]`;
+                if(json._name) texto += ` [Nombre: ${json._name}]`;
+                if(json.enrollNumber) texto += ` [EnrollNumber: ${json.enrollNumber}]`;
+            }catch(e){
+                //console.error("Error al parsear el mensaje del molinete:", e);
+            }
             $("#consola").append(`<div class=''><b>${fechaHora}</b> ${texto}</div>`);
         }
         $("#consola").scrollTop($("#consola")[0].scrollHeight); //auto-scroll al final de la consola

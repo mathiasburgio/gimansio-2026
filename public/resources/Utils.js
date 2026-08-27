@@ -481,12 +481,19 @@ class Utils{
     }
     verificarCantidadPasadas(registros){
         const umbral = 3 * 60 * 60 * 1000; // 3 horas
-        const propFecha = "date"; // Propiedad que contiene la fecha en cada registro
-
         let contador = 0;
-        registros.forEach((p, i) => {
-            let fx = new Date(p[propFecha]).getTime();
-            let fxAnterior = i > 0 ? new Date(registros[i - 1][propFecha]).getTime() : null;
+        const registrosOrdenados = [...registros].sort((a, b) => {
+            return new Date((a.fecha || a.date).replace?.(" ", "T") || (a.fecha || a.date))
+                - new Date((b.fecha || b.date).replace?.(" ", "T") || (b.fecha || b.date));
+        });
+
+        registrosOrdenados.forEach((p, i) => {
+            const valorFecha = p.fecha || p.date;
+            const valorFechaAnterior = i > 0 ? (registrosOrdenados[i - 1].fecha || registrosOrdenados[i - 1].date) : null;
+            let fx = new Date(valorFecha.replace?.(" ", "T") || valorFecha).getTime();
+            let fxAnterior = valorFechaAnterior
+                ? new Date(valorFechaAnterior.replace?.(" ", "T") || valorFechaAnterior).getTime()
+                : null;
 
             // si la diferencia es menor al umbral, no contamos esta pasada
             if(fxAnterior && (fx - fxAnterior) < umbral) return;

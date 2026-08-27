@@ -7,7 +7,8 @@ class Resumen{
         this.hasta = null;
         this.init();
     }
-    init(){
+    async init(){
+        document.title = "Resumen - v" + await window.electronAPI.getVersion();
         let anioMes = utils.formatearFecha(new Date(), "usa").slice(0, 7);
         $("#mes").val(anioMes);
 

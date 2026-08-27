@@ -14,11 +14,12 @@ let desktopPath = "";
 const isPackaged = app.isPackaged; // modo de produccion o desarrollo
 let usuarioLogeado = null; // variable global para almacenar el usuario logeado
 let config = null;
+let version = require('./package.json').version;
 
 let win;
 async function createWindow() {
     try{
-        config = JSON.parse(fs.readFileSync(path.join(documentsPath, "fulltraining-2026", "config.json"), "utf-8"));
+        
     
         win = new BrowserWindow({
             width: 1600,
@@ -87,11 +88,16 @@ app.whenReady().then(() => {
                 logger.log("Iniciado escuchador SDK en puerto 4000. POST /escucha");
             }
         });
+
+        escuchadorSDK.setCallback((resp)=>{
+            escribirRegistrosMolinete(JSON.stringify(resp));
+        });
         
         //copio config.json
         if(fs.existsSync(path.join(documentsPath, "fulltraining-2026", "config.json")) == false){
             let defaultConfig = {
                 debug: false,
+                InterfazMolineteSDK_PATH: "C:\\Users\\Gimnasio\\Documents\\InterfazMolineteSDK\\InterfazMolineteSDK.exe",
                 db: {
                     host: "localhost",
                     user: "root",
@@ -99,13 +105,19 @@ app.whenReady().then(() => {
                     database: "gimnasio2026"
                 },
                 molinete: {
-                    ip: "127.0.0.1",
-                    port: "1234",
-                    password: "123456789"
+                    ip: "192.168.101.250",
+                    port: "4370",
+                    password: "123456"
                 }
             }
             fs.writeFileSync(path.join(documentsPath, "fulltraining-2026", "config.json"), JSON.stringify(defaultConfig, null, 4));
         }
+
+        //obtengo la configuracion
+        config = JSON.parse(fs.readFileSync(path.join(documentsPath, "fulltraining-2026", "config.json"), "utf-8"));
+
+        // Conectar al molinete al iniciar la aplicación
+        conectarMolinete(false);
     }catch(e){
         console.log("Error al iniciar la aplicación: " + e.message, "error");
         throw e;
@@ -170,6 +182,9 @@ ipcMain.handle("get-config", async (event, data) => {
     let config = JSON.parse(fs.readFileSync(path.join(documentsPath, "fulltraining-2026", "config.json"), "utf-8"));
     return config;
 });
+ipcMain.handle("get-version", async (event, data) => {
+    return version;
+});
 
 //MOLINETE
 let estadoMolinete = {status: false, message: "No conectado"};
@@ -180,7 +195,7 @@ async function conectarMolinete(forzar = false){
         escribirRegistrosMolinete("Intentando conectar con el molinete...");
         // Verifico la existencia del archivo InterfazMolineteSDK.exe
         const nombreExe = "InterfazMolineteSDK.exe";
-        const molineteSDKPath = path.join(documentsPath, "fulltraining-2026", nombreExe);
+        const molineteSDKPath = config?.InterfazMolineteSDK_PATH || "";
         if(fs.existsSync(molineteSDKPath) == false) throw `No se encontró el archivo ${nombreExe} en la ruta ${molineteSDKPath}`;
 
         // Verificar si está ejecutándose
@@ -190,17 +205,23 @@ async function conectarMolinete(forzar = false){
 
         // Si está, finalizarlo
         if (isRunning) {
-            await execAsync(`taskkill /F /IM "${nombreExe}"`);
+            /* await execAsync(`taskkill /F /IM "${nombreExe}"`);
             // Esperar un instante para asegurarse de que terminó
             await new Promise(resolve => setTimeout(resolve, 1000));
             estadoMolinete = {status: false, message: "Se detuvo el proceso InterfazMolineteSDK.exe"};
-            escribirRegistrosMolinete("Se detuvo el proceso InterfazMolineteSDK.exe");
+            escribirRegistrosMolinete("Se detuvo el proceso InterfazMolineteSDK.exe"); */
+
+            estadoMolinete = {status: false, message: "InterfazMolineteSDK.exe ya se estaba ejecutando"};
+            escribirRegistrosMolinete("InterfazMolineteSDK.exe ya se estaba ejecutando");
+        }else{
+            // Iniciar nuevamente como administrador
+            await execAsync(`powershell -Command "Start-Process '${molineteSDKPath}' -Verb RunAs"`);
+            estadoMolinete = {status: false, message: "Se inició correctamente InterfazMolineteSDK.exe, esperando 5 segundos para enviar señal de conexión"};
+            escribirRegistrosMolinete("Se inició correctamente InterfazMolineteSDK.exe, esperando 5 segundos para enviar señal de conexión");
+    
+            await new Promise(resolve => setTimeout(resolve, 5000));
         }
 
-        // Iniciar nuevamente como administrador
-        await execAsync(`powershell -Command "Start-Process '${molineteSDKPath}' -Verb RunAs"`);
-        estadoMolinete = {status: false, message: "Se inició correctamente InterfazMolineteSDK.exe"};
-        escribirRegistrosMolinete("Se inició correctamente InterfazMolineteSDK.exe");
 
         let fd = new FormData();
         fd.append("accion", "conectar-molinete");
@@ -274,11 +295,11 @@ ipcMain.handle("status-molinete", async (event, data) => {
 })
 ipcMain.handle("conectar-molinete", async (event, data) => {
     let resp = await conectarMolinete(true);
-    if(resp){
+    /* if(resp){
         escuchadorSDK.setCallback((body) => {
             win.webContents.send("evento-sdk", {from: "molinete", body: body});
         });
-    }
+    } */
     return resp;
 });
 ipcMain.handle("sincronizar-molinete", async (event, data) => {
