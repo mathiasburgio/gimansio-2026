@@ -98,7 +98,7 @@ class Molinete{
         else{
             const aux = msj.split("#");
             const fechaHora = aux[0];
-            const texto = aux.slice(1).join(" ");
+            let texto = aux.slice(1).join(" ");
             let json = texto;
             try{
                 json = JSON.parse(texto);

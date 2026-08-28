@@ -398,7 +398,7 @@ async function sincronizar(sincroInteligente=true, limpiarRegistros=false){
         sincronizando.estado = true;
         sincronizando.iniciado = new Date();
 
-        resp.push(`${ahoraFechaHora} # Iniciando sincronización del molinete (sincroInteligente: ${sincroInteligente}, limpiarRegistros: ${limpiarRegistros})`);
+        resp.push(`Iniciando sincronización del molinete (sincroInteligente: ${sincroInteligente}, limpiarRegistros: ${limpiarRegistros})`);
 
         //0. Verifico si el molinete está conectado, si no lo está, intento conectarlo
         if(estadoMolinete.status == false){
@@ -419,6 +419,9 @@ async function sincronizar(sincroInteligente=true, limpiarRegistros=false){
         let hace20Dias = new Date();
         hace20Dias.setDate(hace20Dias.getDate() - 20);
         let misRegistros = await db.executeQuery(`SELECT * FROM pase WHERE fecha >= ?`, [hace20Dias.toISOString().slice(0, 10)]);
+        const fechasExistentes = new Set(
+            misRegistros.map(registro => String(registro.fecha))
+        );
         let tPasesBD1 = performance.now();
         resp.push("2. Pasadas obtenidas correctamente de la base de datos (registros: " + misRegistros.length + ", tiempo: " + (tPasesBD1 - tPasesBD0).toFixed(2) + " ms)");
 
@@ -433,32 +436,42 @@ async function sincronizar(sincroInteligente=true, limpiarRegistros=false){
         resp.push("3. Usuarios locales obtenidos correctamente de la base de datos (registros: " + usuariosLocales.length + ", tiempo: " + (tUsuariosLocales1 - tUsuariosLocales0).toFixed(2) + " ms)");
 
         //4- Guardo en mi BD los registros que no existan
-        let tRegistrarPases0 = performance.now();
+        let tRegistrarPases0 = performance.now();    
+        const fechaLimite = hace20Dias.toISOString().slice(0, 10);    
         for(let log of logs){
-            let existe = await db.executeQuery(`SELECT * FROM pase WHERE fecha = ?`, [log.date]);
+            const fecha = String(log.date);
+            if (fechasExistentes.has(fecha)) continue;
+
+            // No guardo registros antiguos que ya no son relevantes para el sistema.
+            if (fecha.slice(0, 10) < fechaLimite) continue;
+
+            //let existe = await db.executeQuery(`SELECT * FROM pase WHERE fecha = ?`, [log.date]);
             //let existe = misRegistros.find(r=> r.fecha.toString() === log.date.toString());
-            if(!existe || existe.length === 0){
-                let q = `INSERT INTO pase SET 
-                usuarioId = ?, 
-                usuarioNombre=?,
-                enrollNumber = ?,
-                createdAt = NOW(),
+            /* if(!existe || existe.length === 0){
+            } */
+            let q = `INSERT INTO pase SET 
+            usuarioId = ?, 
+            usuarioNombre=?,
+            enrollNumber = ?,
+            createdAt = NOW(),
 
-                fecha = ?, 
-                full = ?, 
-                iGLCount = ?`;
-                let usuarioId = objUsuariosLocales[log.enrollNumber]?.id || -1;
-                let usuarioNombre = objUsuariosLocales[log.enrollNumber]?.nombre || "Desconocido";
+            fecha = ?, 
+            full = ?, 
+            iGLCount = ?`;
+            let usuarioId = objUsuariosLocales[log.enrollNumber]?.id || -1;
+            let usuarioNombre = objUsuariosLocales[log.enrollNumber]?.nombre || "Desconocido";
 
-                await db.executeQuery(q, [
-                    usuarioId, 
-                    usuarioNombre, 
-                    log.enrollNumber, 
-                    log.date, 
-                    JSON.stringify(log), 
-                    log.iGLCount
-                ]);
-            }
+            await db.executeQuery(q, [
+                usuarioId, 
+                usuarioNombre, 
+                log.enrollNumber, 
+                log.date, 
+                JSON.stringify(log), 
+                log.iGLCount
+            ]);
+
+            // Evita duplicados incluso si el SDK devuelve dos veces la misma pasada.
+            fechasExistentes.add(fecha);
         }
         let tRegistrarPases1 = performance.now();
         resp.push("4. Pasadas registradas correctamente en la base de datos (tiempo: " + (tRegistrarPases1 - tRegistrarPases0).toFixed(2) + " ms)");
@@ -484,11 +497,16 @@ async function sincronizar(sincroInteligente=true, limpiarRegistros=false){
         let tTurnos1 = performance.now();
         resp.push("6. Turnos obtenidos correctamente de la base de datos y asignados a cada usuario (tiempo: " + (tTurnos1 - tTurnos0).toFixed(2) + " ms)");
 
-        //7. Ejecuto los cambios en el molinete
-        let ejecuciones = 0, habilitados = 0, deshabilitados = 0;
-        let tEjecutarAcciones0 = performance.now();
+        //7. Obtengo los usuarios del molinete
+        let tUsuariosMolinete0 = performance.now(); 
         let usuariosMolinete = await ejecutarMolinete("obtener-usuarios-molinete");
         if(typeof usuariosMolinete == "string") usuariosMolinete = JSON.parse(usuariosMolinete);
+        let tUsuariosMolinete1 = performance.now(); 
+        resp.push("7. Usuarios obtenidos del molinete: " + (usuariosMolinete.length || 0) + " en " + (tUsuariosMolinete1 - tUsuariosMolinete0).toFixed(2) + " ms");
+        
+        //8. Ejecuto los cambios en el molinete
+        let ejecuciones = 0, habilitados = 0, deshabilitados = 0;
+        let tEjecutarAcciones0 = performance.now();
         for(let usuario of usuariosMolinete){
             let usuarioLocal = objUsuariosLocales[usuario.enrollNumber];
             if(!usuarioLocal) continue; // no existe en mi BD local
@@ -526,16 +544,16 @@ async function sincronizar(sincroInteligente=true, limpiarRegistros=false){
             }
         }
         let tEjecutarAcciones1 = performance.now();
-        resp.push("7. Acciones ejecutadas correctamente en el molinete (ejecuciones: " + ejecuciones + ", habilitados: " + habilitados + ", deshabilitados: " + deshabilitados + ", tiempo: " + (tEjecutarAcciones1 - tEjecutarAcciones0).toFixed(2) + " ms)");
+        resp.push("8. Acciones ejecutadas correctamente en el molinete (ejecuciones: " + ejecuciones + ", habilitados: " + habilitados + ", deshabilitados: " + deshabilitados + ", tiempo: " + (tEjecutarAcciones1 - tEjecutarAcciones0).toFixed(2) + " ms)");
 
-        //8. Borro los registros pasados del molinete
+        //9. Borro los registros pasados del molinete
         if(limpiarRegistros){
             let tBorrarLogs0 = performance.now();
             let respBorrarLogs = await ejecutarMolinete("borrar-logs-pasadas");
             let tBorrarLogs1 = performance.now();
-            resp.push("8. Registros del molinete borrados correctamente (tiempo: " + (tBorrarLogs1 - tBorrarLogs0).toFixed(2) + " ms)");
+            resp.push("9. Registros del molinete borrados correctamente (tiempo: " + (tBorrarLogs1 - tBorrarLogs0).toFixed(2) + " ms)");
         }else{
-            resp.push("8. No se borraron los registros del molinete (limpiarRegistros = false)");
+            resp.push("9. No se borraron los registros del molinete (limpiarRegistros = false)");
         }
         respOk = true;
         resp.push("--Sincronización finalizada correctamente--");

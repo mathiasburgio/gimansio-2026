@@ -37,7 +37,7 @@ class Resumen{
     }
     async listarResumen(){
     
-        this.registrosCobroPago = await window.electronAPI.executeQuery(`SELECT * FROM cobropago WHERE createdAt >= ? AND createdAt < ?`, [this.desde, this.hasta]);
+        this.registrosCobroPago = await window.electronAPI.executeQuery(`SELECT * FROM cobropago WHERE createdAt >= ? AND createdAt < ? AND COALESCE(eliminado, 0) != 1`, [this.desde, this.hasta]);
 
         let tbody = [];
         let saldo = 0;
@@ -164,6 +164,7 @@ class Resumen{
                         detalle = ?, 
                         usuarioCobrador= ?,
                         usuarioCobradorId= ?,
+                        eliminado = 0,
                         createdAt= NOW()`,
                     [data.accion, JSON.stringify(auxCaja), data.monto, data.detalle, usuarioLogeado.nombre, usuarioLogeado.id]
                 );

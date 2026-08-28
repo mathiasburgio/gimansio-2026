@@ -56,11 +56,13 @@ class Turnos {
 
             let resp = await modal.yesno("¿Está seguro que desea cancelar este turno?");
             if(!resp) return;
+
+            let cancelarCobro = false;
+            if(this.esTurnoActivo(this.ultimoTurno) && utils.getBoolean(this.ultimoTurno.cobrado)){
+                cancelarCobro = await modal.yesno("¿Desea cancelar también el cobro asociado a este turno?");
+            }
             try{
-                let q = `UPDATE turno SET cancelado = 1 WHERE id = ?`;
-                let p = [this.ultimoTurno.id];
-                let resultado = await window.electronAPI.executeQuery(q, p);
-                console.log(resultado);
+                await this.cancelarTurno(this.ultimoTurno, cancelarCobro);
                 modal.message("Turno cancelado correctamente");
                 this.limpiar();
             }catch(err){
@@ -191,10 +193,37 @@ class Turnos {
             let turno = registros.find(r=>r.id == turnoId);
             let resp = await modal.addPopover({querySelector: td, type: "yesno", message: "¿Está seguro que desea cancelar este turno?"});
             if(!resp) return;
-            let r = await window.electronAPI.executeQuery("UPDATE turno SET cancelado = 1 WHERE id = ?", [turnoId]);
-            turno.cancelado = 1;
-            tr.find("td:eq(4)").html("Sí").removeClass("table-hover-danger cp");
+
+            let cancelarCobro = false;
+            if(this.esTurnoActivo(turno) && utils.getBoolean(turno.cobrado)){
+                cancelarCobro = await modal.addPopover({querySelector: td, type: "yesno", message: "¿Desea cancelar también el cobro asociado a este turno?"});
+            }
+
+            try{
+                await this.cancelarTurno(turno, cancelarCobro);
+                turno.cancelado = 1;
+                tr.find("td:eq(4)").html("Sí").removeClass("table-hover-danger cp");
+            }catch(err){
+                console.error(err);
+                modal.addPopover({querySelector: td, message: "Ocurrió un error al cancelar el turno"});
+            }
         });
+    }
+    esTurnoActivo(turno){
+        const hoy = utils.formatearFecha(new Date(), "usa");
+        const desde = utils.formatearFecha(turno.desde, "usa");
+        const hasta = utils.formatearFecha(turno.hasta, "usa");
+        return desde <= hoy && hasta >= hoy;
+    }
+    async cancelarTurno(turno, cancelarCobro=false){
+        await window.electronAPI.executeQuery("UPDATE turno SET cancelado = 1 WHERE id = ?", [turno.id]);
+
+        if(cancelarCobro){
+            await window.electronAPI.executeQuery(
+                "UPDATE cobropago SET eliminado = 1 WHERE turnoId = ? OR id = ?",
+                [turno.id, turno.cobroId]
+            );
+        }
     }
     async verAsistentes(){
 
@@ -505,11 +534,6 @@ class Turnos {
             let disciplinaNombre = turno[0].disciplinaNombre;
 
             try{
-                let q = `UPDATE turno SET cobrado = 1 WHERE id = ?`;
-                let p = [turnoId];
-                let resultado = await window.electronAPI.executeQuery(q, p);
-                console.log(resultado);
-
                 let q2 = `INSERT INTO cobroPago SET
                     accion = 'cobro',
                     monto = ?,
@@ -521,6 +545,7 @@ class Turnos {
                     usuarioCobradorId= ?,
                     usuarioAbonadorId= ?,
                     multicaja= ?,
+                    eliminado = 0,
                     createdAt = NOW()`;
                 let p2 = [
                     (efectivo + transferencia),
@@ -535,6 +560,11 @@ class Turnos {
                 ];
                 let resultado2 = await window.electronAPI.executeQuery(q2, p2);
                 console.log(resultado2);
+
+                await window.electronAPI.executeQuery(
+                    `UPDATE turno SET cobrado = 1, cobroId = ? WHERE id = ?`,
+                    [resultado2.insertId, turnoId]
+                );
                 modal.hide(false, ()=>{
                     modal.message("Cobro registrado correctamente");
                     this.limpiar();
