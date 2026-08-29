@@ -34,6 +34,10 @@ class Resumen{
         $("#agregar-registro").on("click", () => {
             this.agregarRegistro();
         });
+
+        $("#buscar").on("input", () => {
+            this.buscar();
+        });
     }
     async listarResumen(){
     
@@ -53,12 +57,13 @@ class Resumen{
             }
 
             const [fecha, hora] = utils.formatearFecha(r.createdAt, "ar", true).split(" ");
+            const detalle = this.obtenerDetalle(r);
 
             tbody.push(`
                 <tr data-id="${r.id}">
                     <td>${r.accion == "cobro" ? "<span class='badge badge-success'>Cobro</span>" : "<span class='badge badge-danger'>Pago</span>"}</td>
                     <td>${fecha + " " + hora}</td>
-                    <td>${r?.usuarioAbonador || "-"}</td>
+                    <td>${detalle}</td>
                     <td class="text-right">$${utils.formatNumber(r.monto)}</td>
                     <td class="text-right font-weight-bold">$${utils.formatNumber(saldo)}</td>
                 </tr>    
@@ -78,6 +83,7 @@ class Resumen{
             const transferencia = Number(registro.multicaja?.transferencia || 0);
 
             const [fecha, hora] = utils.formatearFecha(registro.createdAt, "ar", true).split(" ");
+            const detalle = this.obtenerDetalle(registro);
 
             modal.message(`
                 <b>Fecha</b>: ${fecha + " " + hora}<br>
@@ -89,9 +95,22 @@ class Resumen{
                 <b>Transferencia</b>: $${utils.formatNumber(transferencia)}<br>
                 <span class='bg-success px-1'><b>Monto</b>: $${utils.formatNumber(registro.monto)}</span><br>
                 
-                <b>Detalle</b>: ${registro.detalle || "-"}
+                <b>Detalle</b>: ${detalle}
             `);
         });        
+    }
+    obtenerDetalle(registro){
+        const esCobroDeTurno = registro.usuarioCobradorId !== null
+            && registro.usuarioCobradorId !== undefined
+            && Number(registro.usuarioAbonadorId) > -1
+            && registro.disciplinaNombre
+            && registro.disciplinaNombre !== "?"
+            && registro.turnoId !== null
+            && registro.turnoId !== undefined;
+
+        return esCobroDeTurno
+            ? `${registro.usuarioAbonador || "-"} - ${registro.disciplinaNombre} (${registro.turnoId})`
+            : (registro.detalle || "-");
     }
     async listarAcumulado(){
 
@@ -176,6 +195,17 @@ class Resumen{
             }catch(err){
                 console.error(err);
                 modal.addPopover({querySelector: ele, message: err.toString()})
+            }
+        });
+    }
+    buscar(){
+        let buscar = $("#buscar").val().toLowerCase();
+        $("table:eq(0) tbody tr").each((index, tr) => {
+            let texto = $(tr).text().toLowerCase();
+            if(texto.includes(buscar)){
+                $(tr).show();
+            }else{
+                $(tr).hide();
             }
         });
     }

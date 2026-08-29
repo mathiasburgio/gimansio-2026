@@ -53,16 +53,17 @@ class Turnos {
         $("#cancelar").on("click", async () => {
             if(this.ultimoTurno === null) return modal.message("No hay un turno seleccionado para cancelar");
             if(utils.getBoolean(this.ultimoTurno.cancelado)) return modal.message("El turno ya se encuentra cancelado");
+            if(this.turnoExpiroHaceMasDe31Dias(this.ultimoTurno)) return modal.message("No se puede cancelar un turno expirado hace más de 31 días");
 
             let resp = await modal.yesno("¿Está seguro que desea cancelar este turno?");
             if(!resp) return;
 
-            let cancelarCobro = false;
+            let revertirCobro = false;
             if(this.esTurnoActivo(this.ultimoTurno) && utils.getBoolean(this.ultimoTurno.cobrado)){
-                cancelarCobro = await modal.yesno("¿Desea cancelar también el cobro asociado a este turno?");
+                revertirCobro = await modal.yesno("¿Desea registrar un pago para anular el cobro asociado a este turno?");
             }
             try{
-                await this.cancelarTurno(this.ultimoTurno, cancelarCobro);
+                await this.cancelarTurno(this.ultimoTurno, revertirCobro);
                 modal.message("Turno cancelado correctamente");
                 this.limpiar();
             }catch(err){
@@ -165,6 +166,7 @@ class Turnos {
 
             tbody.push(`
                 <tr data-id="${registro.id}">
+                    <td>${registro.id}</td>
                     <td>${registro.disciplinaNombre}</td>
                     <td>${utils.invertirFecha(_desde)}</td>
                     <td>${utils.invertirFecha(_hasta)}</td>
@@ -191,18 +193,22 @@ class Turnos {
             let tr = $(ev.currentTarget).closest("tr");
             let turnoId = tr.data("id");
             let turno = registros.find(r=>r.id == turnoId);
+            if(this.turnoExpiroHaceMasDe31Dias(turno)){
+                await modal.addPopover({querySelector: td, message: "No se puede cancelar un turno expirado hace más de 31 días"});
+                return;
+            }
             let resp = await modal.addPopover({querySelector: td, type: "yesno", message: "¿Está seguro que desea cancelar este turno?"});
             if(!resp) return;
 
-            let cancelarCobro = false;
+            let revertirCobro = false;
             if(this.esTurnoActivo(turno) && utils.getBoolean(turno.cobrado)){
-                cancelarCobro = await modal.addPopover({querySelector: td, type: "yesno", message: "¿Desea cancelar también el cobro asociado a este turno?"});
+                revertirCobro = await modal.addPopover({querySelector: td, type: "yesno", message: "¿Desea registrar un pago para anular el cobro asociado a este turno?"});
             }
 
             try{
-                await this.cancelarTurno(turno, cancelarCobro);
+                await this.cancelarTurno(turno, revertirCobro);
                 turno.cancelado = 1;
-                tr.find("td:eq(4)").html("Sí").removeClass("table-hover-danger cp");
+                tr.find("td:eq(5)").html("Sí").removeClass("table-hover-danger cp");
             }catch(err){
                 console.error(err);
                 modal.addPopover({querySelector: td, message: "Ocurrió un error al cancelar el turno"});
@@ -215,15 +221,61 @@ class Turnos {
         const hasta = utils.formatearFecha(turno.hasta, "usa");
         return desde <= hoy && hasta >= hoy;
     }
-    async cancelarTurno(turno, cancelarCobro=false){
-        await window.electronAPI.executeQuery("UPDATE turno SET cancelado = 1 WHERE id = ?", [turno.id]);
-
-        if(cancelarCobro){
-            await window.electronAPI.executeQuery(
-                "UPDATE cobropago SET eliminado = 1 WHERE turnoId = ? OR id = ?",
+    turnoExpiroHaceMasDe31Dias(turno){
+        const hoy = utils.formatearFecha(new Date(), "usa").split("-").map(Number);
+        const hasta = utils.formatearFecha(turno.hasta, "usa").split("-").map(Number);
+        const hoyUTC = Date.UTC(hoy[0], hoy[1] - 1, hoy[2]);
+        const hastaUTC = Date.UTC(hasta[0], hasta[1] - 1, hasta[2]);
+        const diasDesdeVencimiento = (hoyUTC - hastaUTC) / (24 * 60 * 60 * 1000);
+        return diasDesdeVencimiento > 31;
+    }
+    async cancelarTurno(turno, revertirCobro=false){
+        if(revertirCobro){
+            const cobros = await window.electronAPI.executeQuery(
+                `SELECT * FROM cobropago
+                WHERE accion = 'cobro'
+                    AND COALESCE(eliminado, 0) != 1
+                    AND (turnoId = ? OR id = ?)
+                ORDER BY id DESC
+                LIMIT 1`,
                 [turno.id, turno.cobroId]
             );
+
+            if(cobros.length !== 1) throw new Error("No se encontró el cobro asociado al turno");
+
+            const cobro = cobros[0];
+            const usuarioLogeado = await window.electronAPI.getUsuarioLogeado();
+            await window.electronAPI.executeQuery(
+                `INSERT INTO cobropago SET
+                    accion = 'pago',
+                    monto = ?,
+                    grupo = ?,
+                    detalle = ?,
+                    turnoId = ?,
+                    disciplinaNombre = ?,
+                    usuarioCobradorId = ?,
+                    usuarioCobrador = ?,
+                    usuarioAbonadorId = ?,
+                    usuarioAbonador = ?,
+                    multicaja = ?,
+                    eliminado = 0,
+                    createdAt = NOW()`,
+                [
+                    cobro.monto,
+                    cobro.grupo,
+                    `Anulación del cobro ${cobro.id} por cancelación del turno ${turno.id}`,
+                    turno.id,
+                    cobro.disciplinaNombre,
+                    usuarioLogeado?.id ?? cobro.usuarioCobradorId,
+                    usuarioLogeado?.nombre || cobro.usuarioCobrador,
+                    cobro.usuarioAbonadorId,
+                    cobro.usuarioAbonador,
+                    cobro.multicaja
+                ]
+            );
         }
+
+        await window.electronAPI.executeQuery("UPDATE turno SET cancelado = 1 WHERE id = ?", [turno.id]);
     }
     async verAsistentes(){
 

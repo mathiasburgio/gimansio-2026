@@ -55,6 +55,9 @@
                             <div class="col-3">
                                 <input type="month" class="form-control" id="mes">
                             </div>
+                            <div class="col-3">
+                                <input type="search" class="form-control" id="buscar" placeholder="Escriba para filtrar...">
+                            </div>
                             <div class="col d-none">
                                 <select name="caja" class="form-control d-none" id="caja">
                                     <option value="todas">Caja: Todas</option>
@@ -67,7 +70,7 @@
                                     <option value="pagos">Filtro: solo pagos</option>
                                 </select>
                             </div>
-                            <div class="col-9 text-right">
+                            <div class="col-6 text-right">
                                 <button class="btn btn-primary" id="agregar-registro"><i class="fas fa-plus"></i> Agregar registro</button>
                                 <button class="btn btn-success" id="exportar"><i class="fas fa-file-excel"></i> Exportar Excel</button>
                             </div>
@@ -78,7 +81,7 @@
                                     <tr>
                                         <th>Acción</th>
                                         <th>Fecha</th>
-                                        <th>Cliente</th>
+                                        <th>Detalle</th>
                                         <th class="text-right">Monto</th>
                                         <th class="text-right">Saldo (mes)</th>
                                     </tr>
