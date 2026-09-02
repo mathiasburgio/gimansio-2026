@@ -442,6 +442,13 @@ async function sincronizar(sincroInteligente=true, limpiarRegistros=false){
             const fecha = String(log.date);
             if (fechasExistentes.has(fecha)) continue;
 
+            //salvedad ya que en el log viene como "sdwEnrollNumber"
+            log.enrollNumber = log.enrollNumber || log.sdwEnrollNumber;
+            if(!log.enrollNumber){
+                logger.log("Registro de pase ignorado por no tener enrollNumber:", log);
+                continue;
+            }
+
             // No guardo registros antiguos que ya no son relevantes para el sistema.
             if (fecha.slice(0, 10) < fechaLimite) continue;
 
@@ -460,6 +467,10 @@ async function sincronizar(sincroInteligente=true, limpiarRegistros=false){
             iGLCount = ?`;
             let usuarioId = objUsuariosLocales[log.enrollNumber]?.id || -1;
             let usuarioNombre = objUsuariosLocales[log.enrollNumber]?.nombre || "Desconocido";
+            if(usuarioId === -1){
+                logger.log("Registro de pase ignorado por no existir el usuario local:", log);
+                continue;
+            }
 
             await db.executeQuery(q, [
                 usuarioId, 

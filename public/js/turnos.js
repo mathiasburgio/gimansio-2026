@@ -106,7 +106,8 @@ class Turnos {
                 busqueda === "" || 
                 usuario?.nombre?.toString().toLowerCase().includes(busqueda) || 
                 usuario?.email?.toString().toLowerCase().includes(busqueda) ||
-                usuario?.dni?.toString().toLowerCase().includes(busqueda)
+                usuario?.dni?.toString().toLowerCase().includes(busqueda) || 
+                usuario?.enrollNumber?.toString().toLowerCase().includes(busqueda)
             )return true;
             else return false;
         })
